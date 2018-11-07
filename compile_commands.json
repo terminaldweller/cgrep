@@ -1,0 +1,7 @@
+[
+    {
+        "command": "c++ -c -fpic -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -fPIC -fvisibility-inlines-hidden -Werror=date-time -Werror=unguarded-availability-new -std=c++11 -Wall -Wextra -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wmissing-field-initializers -pedantic -Wno-long-long -Wcovered-switch-default -Wnon-virtual-dtor -Wdelete-non-virtual-dtor -Wstring-conversion -ffunction-sections -fdata-sections -O2 -fno-exceptions -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -stdlib=libstdc++ -std=c++17 -fexceptions -o cgrep.o cgrep.cpp", 
+        "directory": "/home/bloodstalker/extra/cgrep", 
+        "file": "/home/bloodstalker/extra/cgrep/cgrep.cpp"
+    }
+]
