@@ -8,6 +8,7 @@
 /*************************************************************************************************/
 /*included modules*/
 /*project headers*/
+#include "./cfe-extra/cfe_extra.h"
 /*standard headers*/
 #include <cassert>
 #include <cstdlib>

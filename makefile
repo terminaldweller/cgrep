@@ -98,16 +98,25 @@ depend:.depend
 %.ocov:%.cpp
 	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
 
-$(TARGET): $(TARGET).o
+./cfe-extra/cfe_extra.o:./cfe-extra/cfe_extra.cpp
+	$(CXX) $(CXX_FLAGS) -c $< -o $@
+
+./cfe-extra/cfe_extra.odbg:./cfe-extra/cfe_extra.cpp
+	$(CXX) $(CXX_FLAGS) -g -c $< -o $@
+
+./cfe-extra/cfe_extra.ocov:./cfe-extra/cfe_extra.cpp
+	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
+
+$(TARGET): $(TARGET).o ./cfe-extra/cfe_extra.o
 	$(CXX) $^ $(LD_FLAGS) -o $@
 
-$(TARGET)-static: $(TARGET).o
+$(TARGET)-static: $(TARGET).o ./cfe-extra/cfe_extra.o
 	$(CXX) $^ $(LD_FLAGS) -static -o $@
 
-$(TARGET)-dbg: $(TARGET).odbg
+$(TARGET)-dbg: $(TARGET).odbg ./cfe-extra/cfe_extra.odbg
 	$(CXX) $^ $(LD_FLAGS) -g -o $@
 
-$(TARGET)-cov: $(TARGET).ocov
+$(TARGET)-cov: $(TARGET).ocov ./cfe-extra/cfe_extra.ocov
 	$(CXX) $^ $(LD_FLAGS) $(COV_LD) -o $@
 
 cov: runcov
@@ -134,10 +143,10 @@ tags:$(SRCS)
 %.dis: %.o
 	objdump -r -d -M intel -S $< > $@
 
-$(TARGET).so: $(TARGET).o
+$(TARGET).so: $(TARGET).o ./cfe-extra/cfe_extra.o
 	$(CXX) $^ $(LD_FLAGS) -shared -o $@
 
-$(TARGET).a: $(TARGET).o
+$(TARGET).a: $(TARGET).o ./cfe-extra/cfe_extra.o
 	ar rcs $(TARGET).a $(TARGET).o
 
 runcov: $(TARGET)-cov
@@ -158,6 +167,7 @@ clean:
 deepclean: clean
 	- rm tags
 	- rm .depend
+	- $(MAKE) -C ./cfe-extra clean
 
 help:
 	@echo "--all is the default target, runs $(TARGET) target"

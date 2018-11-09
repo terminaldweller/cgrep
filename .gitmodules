@@ -1,0 +1,3 @@
+[submodule "cfe-extra"]
+	path = cfe-extra
+	url = https://github.com/bloodstalker/cfe-extra
