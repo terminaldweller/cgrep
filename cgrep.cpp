@@ -42,20 +42,27 @@ using namespace clang::tooling;
 namespace {
 static llvm::cl::OptionCategory CGrepCat("cgrep options");
 cl::opt<std::string> CO_DIRECTORY("dir", cl::desc(""), cl::init(""), cl::cat(CGrepCat), cl::Optional);
-cl::opt<std::string> CO_REGEX("regex", cl::desc(""), cl::init(""), cl::cat(CGrepCat), cl::Optional);
+cl::opt<std::string> CO_REGEX("regex", cl::desc(""), cl::init(""), cl::cat(CGrepCat), cl::Required);
 cl::opt<bool> CO_FUNCTION("func", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_MEM_FUNCTION("memfunc", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_VAR("var", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_MEMVAR("memvar", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_CLASS("class", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_STRUCT("struct", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 }
 /*************************************************************************************************/
+#if 1
+#define REGEX_PP(RX_STR) RX_STR
+#endif
+#if 0
+#define REGEX_PP(RX_STR) regex_preprocessor(RX_STR)
+#endif
 std::string regex_preprocessor(std::string rx_str) {
   std::string ret_rx_str;
   return ret_rx_str;
 }
 
-void regex_handlaer(std::string rx_str) {
+void regex_handler(std::string rx_str) {
   std::regex regex(regex_preprocessor(rx_str));
   return void();
 }
@@ -69,6 +76,7 @@ public:
     if (FD) {
       SourceRange SR = FD->getSourceRange();
       std::string name = FD->getNameAsString();
+      regex_handler(REGEX_PP(CO_REGEX));
     }
   }
 
