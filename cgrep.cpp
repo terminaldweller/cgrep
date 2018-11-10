@@ -42,15 +42,15 @@ using namespace clang::tooling;
 namespace {
 static llvm::cl::OptionCategory CGrepCat("cgrep options");
 cl::opt<std::string> CO_DIRECTORY("dir", cl::desc(""), cl::init(""), cl::cat(CGrepCat), cl::Optional);
-cl::opt<std::string> CO_REGEX("regex", cl::desc(""), cl::init(""), cl::cat(CGrepCat), cl::Required);
-cl::opt<bool> CO_FUNCTION("func", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<std::string> CO_REGEX("regex", cl::desc(""), cl::init(""), cl::cat(CGrepCat), cl::Required); //done
+cl::opt<bool> CO_FUNCTION("func", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_MEM_FUNCTION("memfunc", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
-cl::opt<bool> CO_VAR("var", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_VAR("var", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_MEMVAR("memvar", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
-cl::opt<bool> CO_CLASS("class", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_CLASS("class", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_STRUCT("struct", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
-cl::opt<bool> CO_SYSHDR("syshdr", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
-cl::opt<bool> CO_MAINFILE("mainfile", cl::desc(""), cl::init(true), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_SYSHDR("syshdr", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<bool> CO_MAINFILE("mainfile", cl::desc(""), cl::init(true), cl::cat(CGrepCat), cl::Optional); //done
 }
 /*************************************************************************************************/
 #if 1
@@ -153,7 +153,23 @@ class ClassDecl : public MatchFinder::MatchCallback {
 public:
   ClassDecl(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR) {}
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    const RecordDecl *RD = MR.Nodes.getNodeAs<clang::RecordDecl>("classdecl");
+    if (RD) {
+      SourceRange SR = RD->getSourceRange();
+      SourceLocation SL = SR.getBegin();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      std::string name = RD->getNameAsString();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        std::cout << name << "\t";
+        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
+        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+      }
+    }
+  }
 
 private:
   Rewriter &Rewrite [[maybe_unused]];
