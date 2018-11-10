@@ -50,7 +50,7 @@ cl::opt<bool> CO_MEMVAR("memvar", cl::desc(""), cl::init(false), cl::cat(CGrepCa
 cl::opt<bool> CO_CLASS("class", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_STRUCT("struct", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_SYSHDR("syshdr", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
-cl::opt<bool> CO_MAINFILE("mainfile", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_MAINFILE("mainfile", cl::desc(""), cl::init(true), cl::cat(CGrepCat), cl::Optional);
 }
 /*************************************************************************************************/
 #if 1
@@ -71,23 +71,27 @@ std::string regex_preprocessor(std::string rx_str) {
 }
 
 bool regex_handler(std::string rx_str, std::string identifier_name) {
-  std::regex rx(regex_preprocessor(rx_str));
+  std::regex rx(rx_str);
   std::smatch result;
   return std::regex_search(identifier_name, result, rx);
 }
 /*************************************************************************************************/
-class CalledFunc : public MatchFinder::MatchCallback {
+class FunctionHandler : public MatchFinder::MatchCallback {
 public:
-  CalledFunc(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  FunctionHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
-    std::cout << "hey\n";
     const FunctionDecl *FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("funcdecl");
     if (FD) {
       SourceRange SR = FD->getSourceRange();
+      SourceLocation SL = SR.getBegin();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = FD->getNameAsString();
-      std::cout << name << "\n";
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        std::cout << name << "\t";
         std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
         std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
       }
@@ -98,21 +102,11 @@ private:
   Rewriter &Rewrite [[maybe_unused]];
 };
 /*************************************************************************************************/
-class CalledVar : public MatchFinder::MatchCallback {
+class VarHandler : public MatchFinder::MatchCallback {
 public:
-  CalledVar(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  VarHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
-    const VarDecl *VD = MR.Nodes.getNodeAs<clang::VarDecl>("vardecl");
-    if (VD) {
-      SourceRange SR = VD->getSourceRange();
-      std::string name = VD->getNameAsString();
-      std::cout << name << "\n";
-      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
-        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
-      }
-    }
   }
 
 private:
@@ -133,7 +127,23 @@ class VDecl : public MatchFinder::MatchCallback {
 public:
   VDecl(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR) {}
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    const VarDecl *VD = MR.Nodes.getNodeAs<clang::VarDecl>("vardecl");
+    if (VD) {
+      SourceRange SR = VD->getSourceRange();
+      SourceLocation SL = SR.getBegin();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      std::string name = VD->getNameAsString();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        std::cout << name << "\t";
+        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
+        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+      }
+    }
+  }
 
 private:
   Rewriter &Rewrite [[maybe_unused]];
@@ -200,7 +210,7 @@ public:
         HandlerForCalledFunc(R), HandlerForCalledVar(R) {
 #if 1
     if (CO_FUNCTION) {
-      Matcher.addMatcher(functionDecl().bind("funcdecl"), &funcDeclHandler);
+      Matcher.addMatcher(functionDecl().bind("funcdecl"), &HandlerForCalledFunc);
     }
     if (CO_VAR) {
     Matcher.addMatcher(
@@ -213,7 +223,9 @@ public:
     Matcher.addMatcher(recordDecl(isClass()).bind("classdecl"),
                        &HandlerForClass);
     }
-    Matcher.addMatcher(declRefExpr().bind("calledvar"), &HandlerForCalledVar);
+    if (CO_VAR) {
+      Matcher.addMatcher(declRefExpr().bind("calledvar"), &HandlerForCalledVar);
+    }
 #endif
   }
 
@@ -225,8 +237,8 @@ private:
   FuncDecl funcDeclHandler;
   VDecl HandlerForVar;
   ClassDecl HandlerForClass;
-  CalledFunc HandlerForCalledFunc;
-  CalledVar HandlerForCalledVar;
+  FunctionHandler HandlerForCalledFunc;
+  VarHandler HandlerForCalledVar;
   MatchFinder Matcher;
 };
 /*************************************************************************************************/
@@ -237,7 +249,7 @@ public:
 
   void EndSourceFileAction() override {
     std::error_code EC;
-    TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
+    //TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
   }
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI,
