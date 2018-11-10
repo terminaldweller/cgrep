@@ -49,6 +49,8 @@ cl::opt<bool> CO_VAR("var", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl
 cl::opt<bool> CO_MEMVAR("memvar", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_CLASS("class", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_STRUCT("struct", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_SYSHDR("syshdr", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_MAINFILE("mainfile", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 }
 /*************************************************************************************************/
 #if 1
@@ -57,14 +59,21 @@ cl::opt<bool> CO_STRUCT("struct", cl::desc(""), cl::init(false), cl::cat(CGrepCa
 #if 0
 #define REGEX_PP(RX_STR) regex_preprocessor(RX_STR)
 #endif
+
+/**
+ * @brief does some preprocessing on the regex string we get as input
+ * @param rx_str
+ * @return the preprocessed string
+ */
 std::string regex_preprocessor(std::string rx_str) {
   std::string ret_rx_str;
   return ret_rx_str;
 }
 
-void regex_handler(std::string rx_str) {
-  std::regex regex(regex_preprocessor(rx_str));
-  return void();
+bool regex_handler(std::string rx_str, std::string identifier_name) {
+  std::regex rx(regex_preprocessor(rx_str));
+  std::smatch result;
+  return std::regex_search(identifier_name, result, rx);
 }
 /*************************************************************************************************/
 class CalledFunc : public MatchFinder::MatchCallback {
@@ -72,11 +81,16 @@ public:
   CalledFunc(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
+    std::cout << "hey\n";
     const FunctionDecl *FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("funcdecl");
     if (FD) {
       SourceRange SR = FD->getSourceRange();
       std::string name = FD->getNameAsString();
-      regex_handler(REGEX_PP(CO_REGEX));
+      std::cout << name << "\n";
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
+        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+      }
     }
   }
 
@@ -93,6 +107,11 @@ public:
     if (VD) {
       SourceRange SR = VD->getSourceRange();
       std::string name = VD->getNameAsString();
+      std::cout << name << "\n";
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
+        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+      }
     }
   }
 
@@ -180,14 +199,20 @@ public:
       : funcDeclHandler(R), HandlerForVar(R), HandlerForClass(R),
         HandlerForCalledFunc(R), HandlerForCalledVar(R) {
 #if 1
-    Matcher.addMatcher(functionDecl().bind("funcdecl"), &funcDeclHandler);
+    if (CO_FUNCTION) {
+      Matcher.addMatcher(functionDecl().bind("funcdecl"), &funcDeclHandler);
+    }
+    if (CO_VAR) {
     Matcher.addMatcher(
         varDecl(anyOf(unless(hasDescendant(expr(anything()))),
                       hasDescendant(expr(anything()).bind("expr"))))
             .bind("vardecl"),
         &HandlerForVar);
+    }
+    if (CO_CLASS) {
     Matcher.addMatcher(recordDecl(isClass()).bind("classdecl"),
                        &HandlerForClass);
+    }
     Matcher.addMatcher(declRefExpr().bind("calledvar"), &HandlerForCalledVar);
 #endif
   }
@@ -212,8 +237,7 @@ public:
 
   void EndSourceFileAction() override {
     std::error_code EC;
-    TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID())
-        .write(llvm::outs());
+    TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
   }
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI,
