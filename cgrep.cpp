@@ -42,15 +42,16 @@ using namespace clang::tooling;
 namespace {
 static llvm::cl::OptionCategory CGrepCat("cgrep options");
 cl::opt<std::string> CO_DIRECTORY("dir", cl::desc(""), cl::init(""), cl::cat(CGrepCat), cl::Optional);
-cl::opt<std::string> CO_REGEX("regex", cl::desc(""), cl::init(""), cl::cat(CGrepCat), cl::Required); //done
-cl::opt<bool> CO_FUNCTION("func", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_MEM_FUNCTION("memfunc", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
-cl::opt<bool> CO_VAR("var", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_MEMVAR("memvar", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
-cl::opt<bool> CO_CLASS("class", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_STRUCT("struct", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional);
-cl::opt<bool> CO_SYSHDR("syshdr", cl::desc(""), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_MAINFILE("mainfile", cl::desc(""), cl::init(true), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<std::string> CO_REGEX("regex", cl::desc("the regex to match against"), cl::init(""), cl::cat(CGrepCat), cl::Required); //done
+cl::opt<bool> CO_FUNCTION("func", cl::desc("match functions only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<bool> CO_MEM_FUNCTION("memfunc", cl::desc("match member functions only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<bool> CO_VAR("var", cl::desc("map variables only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<bool> CO_MEMVAR("memvar", cl::desc("map member variables only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<bool> CO_CLASS("class", cl::desc("map class declrations only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<bool> CO_STRUCT("struct", cl::desc("map structures only"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_ALL("all", cl::desc("map all identifier types"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_SYSHDR("syshdr", cl::desc("match identifiers in system header as well"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<bool> CO_MAINFILE("mainfile", cl::desc("mathc identifiers in the main file only"), cl::init(true), cl::cat(CGrepCat), cl::Optional); //done
 }
 /*************************************************************************************************/
 #if 1
@@ -102,22 +103,53 @@ private:
   Rewriter &Rewrite [[maybe_unused]];
 };
 /*************************************************************************************************/
-class VarHandler : public MatchFinder::MatchCallback {
+class FieldHandler : public MatchFinder::MatchCallback {
 public:
-  VarHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  FieldHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
+    const FieldDecl *VD = MR.Nodes.getNodeAs<clang::FieldDecl>("fielddecl");
+    if (VD) {
+      SourceRange SR = VD->getSourceRange();
+      SourceLocation SL = SR.getBegin();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      std::string name = VD->getNameAsString();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        std::cout << name << "\t";
+        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
+        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+      }
+    }
   }
 
 private:
   Rewriter &Rewrite [[maybe_unused]];
 };
 /*************************************************************************************************/
-class FuncDecl : public MatchFinder::MatchCallback {
+class CXXMethodHandler : public MatchFinder::MatchCallback {
 public:
-  FuncDecl(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  CXXMethodHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-  virtual void run(const MatchFinder::MatchResult &MR) {}
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    const CXXMethodDecl *MD = MR.Nodes.getNodeAs<clang::CXXMethodDecl>("cxxmethoddecl");
+    if (MD) {
+      SourceRange SR = MD->getSourceRange();
+      SourceLocation SL = SR.getBegin();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      std::string name = MD->getNameAsString();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        std::cout << name << "\t";
+        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
+        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+      }
+    }
+  }
 
 private:
   Rewriter &Rewrite [[maybe_unused]];
@@ -222,8 +254,8 @@ public:
 class MyASTConsumer : public ASTConsumer {
 public:
   MyASTConsumer(Rewriter &R)
-      : funcDeclHandler(R), HandlerForVar(R), HandlerForClass(R),
-        HandlerForCalledFunc(R), HandlerForCalledVar(R) {
+      : HandlerForVar(R), HandlerForClass(R),
+        HandlerForCalledFunc(R), HandlerForCXXMethod(R), HandlerForField(R) {
 #if 1
     if (CO_FUNCTION) {
       Matcher.addMatcher(functionDecl().bind("funcdecl"), &HandlerForCalledFunc);
@@ -240,7 +272,13 @@ public:
                        &HandlerForClass);
     }
     if (CO_VAR) {
-      Matcher.addMatcher(declRefExpr().bind("calledvar"), &HandlerForCalledVar);
+      //Matcher.addMatcher(declRefExpr().bind("calledvar"), &HandlerForCalledVar);
+    }
+    if (CO_MEM_FUNCTION) {
+      Matcher.addMatcher(cxxMethodDecl().bind("cxxmethoddecl"), &HandlerForCXXMethod);
+    }
+    if (CO_MEMVAR) {
+      Matcher.addMatcher(fieldDecl().bind("fielddecl"), &HandlerForField);
     }
 #endif
   }
@@ -250,11 +288,11 @@ public:
   }
 
 private:
-  FuncDecl funcDeclHandler;
   VDecl HandlerForVar;
   ClassDecl HandlerForClass;
   FunctionHandler HandlerForCalledFunc;
-  VarHandler HandlerForCalledVar;
+  CXXMethodHandler HandlerForCXXMethod;
+  FieldHandler HandlerForField;
   MatchFinder Matcher;
 };
 /*************************************************************************************************/
