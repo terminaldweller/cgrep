@@ -41,15 +41,19 @@ using namespace clang::tooling;
 /*************************************************************************************************/
 namespace {
 static llvm::cl::OptionCategory CGrepCat("cgrep options");
-cl::opt<std::string> CO_DIRECTORY("dir", cl::desc(""), cl::init(""), cl::cat(CGrepCat), cl::Optional);
+cl::opt<std::string> CO_DIRECTORY("dir", cl::desc("recursively goes through all the files and directories. assumes compilation databases are present for all source files."), cl::init(""), cl::cat(CGrepCat), cl::Optional);
 cl::opt<std::string> CO_REGEX("regex", cl::desc("the regex to match against"), cl::init(""), cl::cat(CGrepCat), cl::Required); //done
 cl::opt<bool> CO_FUNCTION("func", cl::desc("match functions only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_MEM_FUNCTION("memfunc", cl::desc("match member functions only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_VAR("var", cl::desc("map variables only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_MEMVAR("memvar", cl::desc("map member variables only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_CLASS("class", cl::desc("map class declrations only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_STRUCT("struct", cl::desc("map structures only"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
-cl::opt<bool> CO_ALL("all", cl::desc("map all identifier types"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_MEMVAR("memvar", cl::desc("match member variables only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<bool> CO_CLASS("class", cl::desc("match class declrations only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<bool> CO_STRUCT("struct", cl::desc("match structures only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool> CO_UNION("union", cl::desc("match unions only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool> CO_MACRO("macro", cl::desc("match macro definitions"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_HEADER("header", cl::desc("match headers in header inclusions"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_ALL("all", cl::desc("turns on all switches other than nameddecl"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool> CO_NAMEDDECL("nameddecl", cl::desc("matches all named declrations"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_SYSHDR("syshdr", cl::desc("match identifiers in system header as well"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_MAINFILE("mainfile", cl::desc("mathc identifiers in the main file only"), cl::init(true), cl::cat(CGrepCat), cl::Optional); //done
 }
@@ -207,6 +211,84 @@ private:
   Rewriter &Rewrite [[maybe_unused]];
 };
 /*************************************************************************************************/
+class StructHandler : public MatchFinder::MatchCallback {
+public:
+  StructHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    const RecordDecl *RD = MR.Nodes.getNodeAs<clang::RecordDecl>("structdecl");
+    if (RD) {
+      SourceRange SR = RD->getSourceRange();
+      SourceLocation SL = SR.getBegin();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      std::string name = RD->getNameAsString();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        std::cout << name << "\t";
+        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
+        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite [[maybe_unused]];
+};
+/*************************************************************************************************/
+class UnionHandler : public MatchFinder::MatchCallback {
+public:
+  UnionHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    const RecordDecl *RD = MR.Nodes.getNodeAs<clang::RecordDecl>("uniondecl");
+    if (RD) {
+      SourceRange SR = RD->getSourceRange();
+      SourceLocation SL = SR.getBegin();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      std::string name = RD->getNameAsString();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        std::cout << name << "\t";
+        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
+        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite [[maybe_unused]];
+};
+/*************************************************************************************************/
+class NamedDeclHandler : public MatchFinder::MatchCallback {
+public:
+  NamedDeclHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    const NamedDecl *ND = MR.Nodes.getNodeAs<clang::NamedDecl>("namedecl");
+    if (ND) {
+      SourceRange SR = ND->getSourceRange();
+      SourceLocation SL = SR.getBegin();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      std::string name = ND->getNameAsString();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        std::cout << name << "\t";
+        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
+        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite [[maybe_unused]];
+};
+/*************************************************************************************************/
 class PPInclusion : public PPCallbacks {
 public:
   explicit PPInclusion(SourceManager *SM, Rewriter *Rewrite)
@@ -255,31 +337,24 @@ class MyASTConsumer : public ASTConsumer {
 public:
   MyASTConsumer(Rewriter &R)
       : HandlerForVar(R), HandlerForClass(R),
-        HandlerForCalledFunc(R), HandlerForCXXMethod(R), HandlerForField(R) {
+        HandlerForCalledFunc(R), HandlerForCXXMethod(R), HandlerForField(R), HandlerForStruct(R), HandlerForUnion(R), HandlerForNamedDecl(R) {
 #if 1
-    if (CO_FUNCTION) {
-      Matcher.addMatcher(functionDecl().bind("funcdecl"), &HandlerForCalledFunc);
-    }
-    if (CO_VAR) {
-    Matcher.addMatcher(
-        varDecl(anyOf(unless(hasDescendant(expr(anything()))),
-                      hasDescendant(expr(anything()).bind("expr"))))
-            .bind("vardecl"),
-        &HandlerForVar);
-    }
-    if (CO_CLASS) {
-    Matcher.addMatcher(recordDecl(isClass()).bind("classdecl"),
-                       &HandlerForClass);
-    }
-    if (CO_VAR) {
-      //Matcher.addMatcher(declRefExpr().bind("calledvar"), &HandlerForCalledVar);
-    }
-    if (CO_MEM_FUNCTION) {
-      Matcher.addMatcher(cxxMethodDecl().bind("cxxmethoddecl"), &HandlerForCXXMethod);
-    }
-    if (CO_MEMVAR) {
-      Matcher.addMatcher(fieldDecl().bind("fielddecl"), &HandlerForField);
-    }
+    if (CO_FUNCTION || CO_ALL) {
+      Matcher.addMatcher(functionDecl().bind("funcdecl"), &HandlerForCalledFunc);}
+    if (CO_VAR || CO_ALL) {
+      Matcher.addMatcher(varDecl(anyOf(unless(hasDescendant(expr(anything()))), hasDescendant(expr(anything()).bind("expr")))).bind("vardecl"),&HandlerForVar);}
+    if (CO_CLASS || CO_ALL) {
+      Matcher.addMatcher(recordDecl(isClass()).bind("classdecl"),&HandlerForClass);}
+    if (CO_MEM_FUNCTION || CO_ALL) {
+      Matcher.addMatcher(cxxMethodDecl().bind("cxxmethoddecl"), &HandlerForCXXMethod);}
+    if (CO_MEMVAR || CO_ALL) {
+      Matcher.addMatcher(fieldDecl().bind("fielddecl"), &HandlerForField);}
+    if (CO_STRUCT || CO_ALL) {
+      Matcher.addMatcher(recordDecl(isStruct()).bind("structdecl"), &HandlerForStruct);}
+    if (CO_UNION || CO_ALL) {
+      Matcher.addMatcher(recordDecl(isUnion()).bind("uniondecl"), &HandlerForUnion);}
+    if (CO_NAMEDDECL) {
+      Matcher.addMatcher(namedDecl().bind("namedecl"), &HandlerForNamedDecl);}
 #endif
   }
 
@@ -293,6 +368,9 @@ private:
   FunctionHandler HandlerForCalledFunc;
   CXXMethodHandler HandlerForCXXMethod;
   FieldHandler HandlerForField;
+  StructHandler HandlerForStruct;
+  UnionHandler HandlerForUnion;
+  NamedDeclHandler HandlerForNamedDecl;
   MatchFinder Matcher;
 };
 /*************************************************************************************************/
