@@ -54,6 +54,7 @@ cl::opt<bool> CO_MACRO("macro", cl::desc("match macro definitions"), cl::init(fa
 cl::opt<bool> CO_HEADER("header", cl::desc("match headers in header inclusions"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_ALL("all", cl::desc("turns on all switches other than nameddecl"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_NAMEDDECL("nameddecl", cl::desc("matches all named declrations"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool> CO_AWK("awk", cl::desc("outputs location in a gawk freidnly format"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_SYSHDR("syshdr", cl::desc("match identifiers in system header as well"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_MAINFILE("mainfile", cl::desc("mathc identifiers in the main file only"), cl::init(true), cl::cat(CGrepCat), cl::Optional); //done
 }
@@ -79,6 +80,14 @@ bool regex_handler(std::string rx_str, std::string identifier_name) {
   std::regex rx(rx_str);
   std::smatch result;
   return std::regex_search(identifier_name, result, rx);
+}
+
+std::string output_handler(SourceLocation SL, SourceManager &SM) {
+  return SL.printToString(SM);
+}
+
+std::string output_handler(SourceRange SR, SourceManager &SM) {
+  return SR.getBegin().printToString(SM);
 }
 /*************************************************************************************************/
 class FunctionHandler : public MatchFinder::MatchCallback {
