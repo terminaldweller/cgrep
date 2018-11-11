@@ -1,12 +1,47 @@
 # cgrep
 `grep` for C/C++ source files.<br/>
 cgrep uses libtooling, the latest tested version of LLVM is trunk 340121.<br/>
+Should be more or less fine for other C-family languages as well but I haven't tested for those since I don't use those. Let me know if you run into trouble using cgrep on those.<br/>
 
 ## Bulding
-assuming you have the llvm/clang libraries, just run:<br/>
+Assuming you have the llvm/clang libraries(the build file will read your llvm options using `llvm-config` so make sure it's in path), just run:<br/>
 ```bash
 git clone https://github.com/bloodstalker/cgrep
 git submodule init
 git submodule update
 make
 ```
+
+## Usage
+A simple usage example:<br/>
+```bash
+cgrep --func --var --regex nam ./cgrep.cpp
+```
+Pleade do note that the regex will pass through both C++ and the regex engine, so if you would want to escape `\`, the regex you pass as the commandline arg would be `\\\\` instead of the normal `\\`.<br/>
+
+## Options
+Here's an option list though it might not be necessarily up-to-date.<br/>
+For an up-to-date list, you can run `crep --help`.<br/>
+
+```bash
+  -all                       - turns on all switches other than nameddecl
+  -class                     - match class declrations only
+  -dir=<string>              - recursively goes through all the files and directories. assumes compilation databases are present for all source files.
+  -extra-arg=<string>        - Additional argument to append to the compiler command line
+  -extra-arg-before=<string> - Additional argument to prepend to the compiler command line
+  -func                      - match functions only
+  -header                    - match headers in header inclusions
+  -macro                     - match macro definitions
+  -mainfile                  - mathc identifiers in the main file only
+  -memfunc                   - match member functions only
+  -memvar                    - match member variables only
+  -nameddecl                 - matches all named declrations
+  -p=<string>                - Build path
+  -regex=<string>            - the regex to match against
+  -struct                    - match structures only
+  -syshdr                    - match identifiers in system header as well
+  -union                     - match unions only
+  -var                       - map variables only
+
+```
+Also, cgrep is a clang tool, so it will accecpt all valid clang commandline options.<br/>
