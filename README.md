@@ -14,7 +14,7 @@ make
 ## Usage
 A simple usage example:<br/>
 ```bash
-cgrep --func --var --regex nam ./cgrep.cpp
+cgrep --func --var --regex n[aA]m ./cgrep.cpp
 ```
 Pleade do note that the regex will pass through both C++ and the regex engine, so if you would want to escape `\`, the regex you pass as the commandline arg would be `\\\\` instead of the normal `\\`.<br/>
 
@@ -24,10 +24,9 @@ For an up-to-date list, you can run `crep --help`.<br/>
 
 ```bash
   -all                       - turns on all switches other than nameddecl
+  -awk                       - outputs location in a gawk freidnly format
   -class                     - match class declrations only
   -dir=<string>              - recursively goes through all the files and directories. assumes compilation databases are present for all source files.
-  -extra-arg=<string>        - Additional argument to append to the compiler command line
-  -extra-arg-before=<string> - Additional argument to prepend to the compiler command line
   -func                      - match functions only
   -header                    - match headers in header inclusions
   -macro                     - match macro definitions
@@ -35,7 +34,6 @@ For an up-to-date list, you can run `crep --help`.<br/>
   -memfunc                   - match member functions only
   -memvar                    - match member variables only
   -nameddecl                 - matches all named declrations
-  -p=<string>                - Build path
   -regex=<string>            - the regex to match against
   -struct                    - match structures only
   -syshdr                    - match identifiers in system header as well
@@ -43,4 +41,4 @@ For an up-to-date list, you can run `crep --help`.<br/>
   -var                       - map variables only
 
 ```
-Also, cgrep is a clang tool, so it will accecpt all valid clang commandline options.<br/>
+`cgrep` is a clang tool, so it will accecpt all valid clang commandline options.<br/>

@@ -51,7 +51,7 @@ cl::opt<bool> CO_CLASS("class", cl::desc("match class declrations only"), cl::in
 cl::opt<bool> CO_STRUCT("struct", cl::desc("match structures only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_UNION("union", cl::desc("match unions only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_MACRO("macro", cl::desc("match macro definitions"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_HEADER("header", cl::desc("match headers in header inclusions"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_HEADER("header", cl::desc("match headers in header inclusions"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_ALL("all", cl::desc("turns on all switches other than nameddecl"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_NAMEDDECL("nameddecl", cl::desc("matches all named declrations"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_AWK("awk", cl::desc("outputs location in a gawk freidnly format"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
@@ -361,7 +361,17 @@ public:
                                   const clang::Module *Imported,
                                   SrcMgr::CharacteristicKind FileType) {
 #endif
-    if (CO_HEADER) {}
+    if (CO_HEADER) {
+      CheckSLValidity(HashLoc);
+      SourceLocation SL = Devi::SourceLocationHasMacro(HashLoc, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, SM, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, SM, SL)) return void();
+      std::string name = FileName.str();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        std::cout << name << "\t";
+        std::cout << SL.printToString(SM) << "\n";
+      }
+    }
   }
 
 private:
