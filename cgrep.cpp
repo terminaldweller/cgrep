@@ -50,7 +50,7 @@ cl::opt<bool> CO_MEMVAR("memvar", cl::desc("match member variables only"), cl::i
 cl::opt<bool> CO_CLASS("class", cl::desc("match class declrations only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_STRUCT("struct", cl::desc("match structures only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_UNION("union", cl::desc("match unions only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_MACRO("macro", cl::desc("match macro definitions"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_MACRO("macro", cl::desc("match macro definitions"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_HEADER("header", cl::desc("match headers in header inclusions"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_ALL("all", cl::desc("turns on all switches other than nameddecl"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_NAMEDDECL("nameddecl", cl::desc("matches all named declrations"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
@@ -88,6 +88,28 @@ std::string output_handler(SourceLocation SL, SourceManager &SM) {
 
 std::string output_handler(SourceRange SR, SourceManager &SM) {
   return SR.getBegin().printToString(SM);
+}
+
+/**
+ * @brief Gets the list of all directories and sub-directories starting from a base directory.
+ * @param _path where the the base directory is.
+ * @return Returns the list of all found dirs.
+ */
+std::vector<std::string> listDirs(std::string _path) {
+  std::vector<std::string> dummy_;
+  DIR* dir_;
+  struct dirent* ent_;
+  if ((dir_ = opendir(_path.c_str())) != nullptr) {
+    while((ent_ = readdir(dir_)) != nullptr) {
+      std::cout << "name: "  << ent_->d_name << "\ttype:" << int(ent_->d_type) << "\n";
+      if (ent_->d_type == DT_DIR) {}
+      dummy_.push_back(ent_->d_name);
+    }
+  }
+  else {
+    perror("could not open directory.");
+  }
+  return dummy_;
 }
 /*************************************************************************************************/
 class FunctionHandler : public MatchFinder::MatchCallback {
@@ -304,7 +326,20 @@ public:
       : SM(*SM), Rewrite(*Rewrite) {}
 
   virtual void MacroDefined(const Token &MacroNameTok,
-                            const MacroDirective *MD) {}
+                            const MacroDirective *MD) {
+    if (CO_MACRO) {
+      SourceLocation SL = MD->getLocation();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, SM, SL)) return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, SM, SL)) return void();
+      std::string name = MacroNameTok.getIdentifierInfo()->getName().str();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        std::cout << name << "\t";
+        std::cout << SL.printToString(SM) << "\n";
+      }
+    }
+  }
 
   virtual void MacroExpands(const Token &MacroNameTok,
                             const MacroDefinition &MD, SourceRange Range,
@@ -326,6 +361,7 @@ public:
                                   const clang::Module *Imported,
                                   SrcMgr::CharacteristicKind FileType) {
 #endif
+    if (CO_HEADER) {}
   }
 
 private:

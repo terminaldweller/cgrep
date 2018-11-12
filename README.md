@@ -11,7 +11,6 @@ git submodule init
 git submodule update
 make
 ```
-
 ## Usage
 A simple usage example:<br/>
 ```bash
