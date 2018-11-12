@@ -54,9 +54,11 @@ cl::opt<bool> CO_MACRO("macro", cl::desc("match macro definitions"), cl::init(fa
 cl::opt<bool> CO_HEADER("header", cl::desc("match headers in header inclusions"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_ALL("all", cl::desc("turns on all switches other than nameddecl"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_NAMEDDECL("nameddecl", cl::desc("matches all named declrations"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_AWK("awk", cl::desc("outputs location in a gawk freidnly format"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool> CO_AWK("awk", cl::desc("outputs location in a gawk freidnly format"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_SYSHDR("syshdr", cl::desc("match identifiers in system header as well"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_MAINFILE("mainfile", cl::desc("mathc identifiers in the main file only"), cl::init(true), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<int> CO_A("A", cl::desc("same as grep, how many lines after the matched line to print"), cl::init(0), cl::cat(CGrepCat), cl::Optional);
+cl::opt<int> CO_B("B", cl::desc("same as grep, howm many lines before the matched line to print"), cl::init(0), cl::cat(CGrepCat), cl::Optional);
 }
 /*************************************************************************************************/
 #if 1
@@ -65,6 +67,19 @@ cl::opt<bool> CO_MAINFILE("mainfile", cl::desc("mathc identifiers in the main fi
 #if 0
 #define REGEX_PP(RX_STR) regex_preprocessor(RX_STR)
 #endif
+
+#define RED "\033[1;31m"
+#define CYAN "\033[1;36m"
+#define GREEN "\033[1;32m"
+#define BLUE "\033[1;34m"
+#define BLACK "\033[1;30m"
+#define BROWN "\033[1;33m"
+#define MAGENTA "\033[1;35m"
+#define GRAY "\033[1;37m"
+#define DARKGRAY "\033[1;30m"
+#define YELLOW "\033[1;33m"
+#define NORMAL "\033[0m"
+#define CLEAR	"\033[2J"
 
 /**
  * @brief does some preprocessing on the regex string we get as input
@@ -82,11 +97,11 @@ bool regex_handler(std::string rx_str, std::string identifier_name) {
   return std::regex_search(identifier_name, result, rx);
 }
 
-std::string output_handler(SourceLocation SL, SourceManager &SM) {
+std::string output_handler(MatchFinder::MatchResult &MR, SourceLocation SL, SourceManager &SM, bool isdecl) {
   return SL.printToString(SM);
 }
 
-std::string output_handler(SourceRange SR, SourceManager &SM) {
+std::string output_handler(MatchFinder::MatchResult &MR, SourceRange SR, SourceManager &SM, bool isdecl) {
   return SR.getBegin().printToString(SM);
 }
 
@@ -119,7 +134,8 @@ public:
   virtual void run(const MatchFinder::MatchResult &MR) {
     const FunctionDecl *FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("funcdecl");
     if (FD) {
-      SourceRange SR = FD->getSourceRange();
+      DeclarationNameInfo DNI = FD->getNameInfo();
+      SourceRange SR = DNI.getSourceRange();
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
@@ -127,9 +143,38 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = FD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::cout << name << "\t";
-        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
-        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+        std::cout << MAGENTA << SR.getBegin().printToString(*MR.SourceManager) << "\t" << SR.getEnd().printToString(*MR.SourceManager) << NORMAL << "\n";
+        std::ifstream mainfile;
+        mainfile.open(MR.SourceManager->getFilename(SL).str());
+        auto linenumber = MR.SourceManager->getSpellingLineNumber(SL);
+        auto columnnumber_start = MR.SourceManager->getSpellingColumnNumber(SR.getBegin());
+        //auto columnnumber_end = MR.SourceManager->getSpellingColumnNumber(SR.getEnd());
+        //std::cout << DNI.getAsString().length() << "\n";
+        auto columnnumber_end = columnnumber_start + DNI.getAsString().length() - 1;
+        unsigned line_range_begin = linenumber - CO_B;
+        unsigned line_range_end = linenumber + CO_A;
+        std::string line;
+        unsigned line_nu = 0;
+        while(getline(mainfile, line)) {
+          line_nu++;
+          if (line_nu >= line_range_begin && line_nu <= line_range_end) {
+            if (line_nu == linenumber) {
+              std::cout << RED << MR.SourceManager->getFilename(SL).str() << ":" << linenumber << ":" <<columnnumber_start << ":" << NORMAL;
+              for (unsigned i = 1; i < line.length(); ++i) {
+                if (i >= columnnumber_start && i <= columnnumber_end) {
+                  std::cout << RED << line[i] << NORMAL;
+                } else {
+                  std::cout << line[i];
+                }
+              }
+              std::cout << GREEN << "\t<---defined here" << NORMAL << "\n";
+            } else {
+              std::cout << line << "\n";
+            }
+          }
+        }
+        std::cout << "\n";
+        mainfile.close();
       }
     }
   }

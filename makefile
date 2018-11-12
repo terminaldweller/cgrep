@@ -153,7 +153,7 @@ runcov: $(TARGET)-cov
 	$(TARGET)-cov ./cgrep.cpp --
 
 test: $(TARGET)
-	$(TARGET) --regex name --var --func ./cgrep.cpp
+	$(TARGET) --A 1 --B 1 --regex run --func ./cgrep.cpp
 
 valgrind: $(TARGET)
 	- valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all $(TARGET) $(TARGET).cpp --
