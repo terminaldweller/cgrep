@@ -19,7 +19,7 @@ cgrep --func --var --regex n[aA]m ./cgrep.cpp
 Pleade do note that the regex will pass through both C++ and the regex engine, so if you would want to escape `\`, the regex you pass as the commandline arg would be `\\\\` instead of the normal `\\`.<br/>
 In order for cgrep to work, you need to have a compilation database, tools like cmake can generate one for you.<br/>
 If your build tool doesn't do that, you can just use [bear](https://github.com/rizsotto/Bear).<br/>
-You can also skipp the compilation database alltogether passing cgrep `--` after the input file name.<br/>
+You can also skip the compilation database alltogether passing cgrep `--` after the input file name.<br/>
 
 ## Options
 Here's an option list though it might not be necessarily up-to-date.<br/>

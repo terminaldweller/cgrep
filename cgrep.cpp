@@ -97,12 +97,40 @@ bool regex_handler(std::string rx_str, std::string identifier_name) {
   return std::regex_search(identifier_name, result, rx);
 }
 
-std::string output_handler(MatchFinder::MatchResult &MR, SourceLocation SL, SourceManager &SM, bool isdecl) {
-  return SL.printToString(SM);
+void output_handler(MatchFinder::MatchResult &MR, SourceLocation SL, SourceManager &SM, bool isdecl) {
 }
 
-std::string output_handler(MatchFinder::MatchResult &MR, SourceRange SR, SourceManager &SM, bool isdecl) {
-  return SR.getBegin().printToString(SM);
+void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR, SourceManager &SM, bool isdecl) {
+  std::ifstream mainfile;
+  mainfile.open(MR.SourceManager->getFilename(SR.getBegin()).str());
+  auto linenumber = MR.SourceManager->getSpellingLineNumber(SR.getBegin());
+  auto columnnumber_start = MR.SourceManager->getSpellingColumnNumber(SR.getBegin());
+  auto columnnumber_end = MR.SourceManager->getSpellingColumnNumber(SR.getEnd());
+  std::cout << MAGENTA << columnnumber_start << ":" << columnnumber_end << NORMAL << "\n";
+  unsigned line_range_begin = linenumber - CO_B;
+  unsigned line_range_end = linenumber + CO_A;
+  std::string line;
+  unsigned line_nu = 0;
+  while(getline(mainfile, line)) {
+    line_nu++;
+    if (line_nu >= line_range_begin && line_nu <= line_range_end) {
+      if (line_nu == linenumber) {
+        std::cout << RED << MR.SourceManager->getFilename(SR.getBegin()).str() << ":" << linenumber << ":" <<columnnumber_start << ":" << NORMAL;
+        for (unsigned i = 1; i < line.length(); ++i) {
+          if (i >= columnnumber_start && i <= columnnumber_end) {
+            std::cout << RED << line[i] << NORMAL;
+          } else {
+            std::cout << line[i];
+          }
+        }
+        if (isdecl) std::cout << GREEN << "\t<---defined here" << NORMAL << "\n";
+      } else {
+        std::cout << line << "\n";
+      }
+    }
+  }
+  std::cout << "\n";
+  mainfile.close();
 }
 
 /**
@@ -143,13 +171,10 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = FD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::cout << MAGENTA << SR.getBegin().printToString(*MR.SourceManager) << "\t" << SR.getEnd().printToString(*MR.SourceManager) << NORMAL << "\n";
         std::ifstream mainfile;
         mainfile.open(MR.SourceManager->getFilename(SL).str());
         auto linenumber = MR.SourceManager->getSpellingLineNumber(SL);
-        auto columnnumber_start = MR.SourceManager->getSpellingColumnNumber(SR.getBegin());
-        //auto columnnumber_end = MR.SourceManager->getSpellingColumnNumber(SR.getEnd());
-        //std::cout << DNI.getAsString().length() << "\n";
+        auto columnnumber_start = MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
         auto columnnumber_end = columnnumber_start + DNI.getAsString().length() - 1;
         unsigned line_range_begin = linenumber - CO_B;
         unsigned line_range_end = linenumber + CO_A;
@@ -191,6 +216,7 @@ public:
     const FieldDecl *VD = MR.Nodes.getNodeAs<clang::FieldDecl>("fielddecl");
     if (VD) {
       SourceRange SR = VD->getSourceRange();
+      //SourceRange SR = VD->getUnderlyingDecl()->getSourceRange();
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
@@ -198,9 +224,8 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = VD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::cout << name << "\t";
-        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
-        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+        std::cout << YELLOW << MR.SourceManager->getPresumedColumnNumber(SR.getBegin()) << ":" << MR.SourceManager->getPresumedColumnNumber(SR.getEnd()) << NORMAL << "\n";
+        output_handler(MR, SR, *MR.SourceManager, true);
       }
     }
   }
@@ -216,7 +241,8 @@ public:
   virtual void run(const MatchFinder::MatchResult &MR) {
     const CXXMethodDecl *MD = MR.Nodes.getNodeAs<clang::CXXMethodDecl>("cxxmethoddecl");
     if (MD) {
-      SourceRange SR = MD->getSourceRange();
+      DeclarationNameInfo DNI = MD->getNameInfo();
+      SourceRange SR = DNI.getSourceRange();
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
@@ -224,9 +250,35 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = MD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::cout << name << "\t";
-        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
-        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+        std::ifstream mainfile;
+        mainfile.open(MR.SourceManager->getFilename(SL).str());
+        auto linenumber = MR.SourceManager->getSpellingLineNumber(SL);
+        auto columnnumber_start = MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
+        auto columnnumber_end = columnnumber_start + DNI.getAsString().length() - 1;
+        unsigned line_range_begin = linenumber - CO_B;
+        unsigned line_range_end = linenumber + CO_A;
+        std::string line;
+        unsigned line_nu = 0;
+        while(getline(mainfile, line)) {
+          line_nu++;
+          if (line_nu >= line_range_begin && line_nu <= line_range_end) {
+            if (line_nu == linenumber) {
+              std::cout << RED << MR.SourceManager->getFilename(SL).str() << ":" << linenumber << ":" <<columnnumber_start << ":" << NORMAL;
+              for (unsigned i = 1; i < line.length(); ++i) {
+                if (i >= columnnumber_start && i <= columnnumber_end) {
+                  std::cout << RED << line[i] << NORMAL;
+                } else {
+                  std::cout << line[i];
+                }
+              }
+              std::cout << GREEN << "\t<---defined here" << NORMAL << "\n";
+            } else {
+              std::cout << line << "\n";
+            }
+          }
+        }
+        std::cout << "\n";
+        mainfile.close();
       }
     }
   }
@@ -250,9 +302,7 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = VD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::cout << name << "\t";
-        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
-        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+        output_handler(MR, SR, *MR.SourceManager, true);
       }
     }
   }
@@ -276,9 +326,7 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::cout << name << "\t";
-        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
-        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+        output_handler(MR, SR, *MR.SourceManager, true);
       }
     }
   }
@@ -302,9 +350,7 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::cout << name << "\t";
-        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
-        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+        output_handler(MR, SR, *MR.SourceManager, true);
       }
     }
   }
@@ -328,9 +374,7 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::cout << name << "\t";
-        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
-        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+        output_handler(MR, SR, *MR.SourceManager, true);
       }
     }
   }
@@ -354,9 +398,7 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::cout << name << "\t";
-        std::cout << SR.getBegin().printToString(*MR.SourceManager) << "\t";
-        std::cout << SR.getEnd().printToString(*MR.SourceManager) << "\n";
+        output_handler(MR, SR, *MR.SourceManager, true);
       }
     }
   }
@@ -424,7 +466,7 @@ private:
   Rewriter &Rewrite [[maybe_unused]];
 };
 /*************************************************************************************************/
-// brief A Clang Diagnostic Consumer that does nothing.
+/// @brief A Clang Diagnostic Consumer that does nothing since we don't want clang to print out diag info.
 class BlankDiagConsumer : public clang::DiagnosticConsumer {
 public:
   BlankDiagConsumer() = default;
