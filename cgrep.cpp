@@ -54,11 +54,12 @@ cl::opt<bool> CO_MACRO("macro", cl::desc("match macro definitions"), cl::init(fa
 cl::opt<bool> CO_HEADER("header", cl::desc("match headers in header inclusions"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_ALL("all", cl::desc("turns on all switches other than nameddecl"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_NAMEDDECL("nameddecl", cl::desc("matches all named declrations"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool> CO_DECLREFEXPR("declrefexpr", cl::desc("matches declrefexpr"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_AWK("awk", cl::desc("outputs location in a gawk freidnly format"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_SYSHDR("syshdr", cl::desc("match identifiers in system header as well"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_MAINFILE("mainfile", cl::desc("mathc identifiers in the main file only"), cl::init(true), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<int> CO_A("A", cl::desc("same as grep, how many lines after the matched line to print"), cl::init(0), cl::cat(CGrepCat), cl::Optional);
-cl::opt<int> CO_B("B", cl::desc("same as grep, howm many lines before the matched line to print"), cl::init(0), cl::cat(CGrepCat), cl::Optional);
+cl::opt<int> CO_A("A", cl::desc("same as grep, how many lines after the matched line to print"), cl::init(0), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<int> CO_B("B", cl::desc("same as grep, howm many lines before the matched line to print"), cl::init(0), cl::cat(CGrepCat), cl::Optional); //done
 }
 /*************************************************************************************************/
 #if 1
@@ -104,9 +105,10 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR, SourceMa
   std::ifstream mainfile;
   mainfile.open(MR.SourceManager->getFilename(SR.getBegin()).str());
   auto linenumber = MR.SourceManager->getSpellingLineNumber(SR.getBegin());
-  auto columnnumber_start = MR.SourceManager->getSpellingColumnNumber(SR.getBegin());
-  auto columnnumber_end = MR.SourceManager->getSpellingColumnNumber(SR.getEnd());
-  std::cout << MAGENTA << columnnumber_start << ":" << columnnumber_end << NORMAL << "\n";
+  auto columnnumber_start = MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
+  auto columnnumber_end = MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1 - columnnumber_start;
+  //std::cout << MAGENTA << columnnumber_start << ":" << columnnumber_end << NORMAL << "\n";
+  std::cout << MAGENTA << SR.getBegin().printToString(SM) << ":" << SR.getEnd().printToString(SM) << NORMAL << "\n";
   unsigned line_range_begin = linenumber - CO_B;
   unsigned line_range_end = linenumber + CO_A;
   std::string line;
@@ -116,7 +118,7 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR, SourceMa
     if (line_nu >= line_range_begin && line_nu <= line_range_end) {
       if (line_nu == linenumber) {
         std::cout << RED << MR.SourceManager->getFilename(SR.getBegin()).str() << ":" << linenumber << ":" <<columnnumber_start << ":" << NORMAL;
-        for (unsigned i = 1; i < line.length(); ++i) {
+        for (unsigned i = 0; i < line.length(); ++i) {
           if (i >= columnnumber_start && i <= columnnumber_end) {
             std::cout << RED << line[i] << NORMAL;
           } else {
@@ -215,8 +217,9 @@ public:
   virtual void run(const MatchFinder::MatchResult &MR) {
     const FieldDecl *VD = MR.Nodes.getNodeAs<clang::FieldDecl>("fielddecl");
     if (VD) {
-      SourceRange SR = VD->getSourceRange();
-      //SourceRange SR = VD->getUnderlyingDecl()->getSourceRange();
+      //IdentifierInfo* ID = VD->getIdentifier();
+      //SourceRange SR = VD->getSourceRange();
+      SourceRange SR = VD->getUnderlyingDecl()->getSourceRange();
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
@@ -224,7 +227,8 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = VD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::cout << YELLOW << MR.SourceManager->getPresumedColumnNumber(SR.getBegin()) << ":" << MR.SourceManager->getPresumedColumnNumber(SR.getEnd()) << NORMAL << "\n";
+        //std::cout << YELLOW << MR.SourceManager->getSpellingColumnNumber(VD->getBeginLoc()) << ":"<< MR.SourceManager->getSpellingColumnNumber(VD->getEndLoc()) << NORMAL << "\n";
+        //std::cout << BLUE << ID->getLength() << NORMAL << "\n";
         output_handler(MR, SR, *MR.SourceManager, true);
       }
     }
@@ -326,7 +330,7 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        output_handler(MR, SR, *MR.SourceManager, true);
+        output_handler(MR, SourceRange(RD->getBeginLoc(), RD->getEndLoc()), *MR.SourceManager, true);
       }
     }
   }
@@ -407,6 +411,31 @@ private:
   Rewriter &Rewrite [[maybe_unused]];
 };
 /*************************************************************************************************/
+class DeclRefExprHandler : public MatchFinder::MatchCallback {
+  public:
+    DeclRefExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR) {
+      const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("declrefexpr");
+      if (DRE) {
+        SourceLocation SL = DRE->getBeginLoc();
+        SourceLocation SLE = DRE->getEndLoc();
+        CheckSLValidity(SL);
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+        if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
+        if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+        const NamedDecl* ND = DRE->getFoundDecl();
+        std::string name = ND->getNameAsString();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, true);
+      }
+      }
+    }
+
+  private:
+    Rewriter &Rewrite [[maybe_unused]];
+};
+/*************************************************************************************************/
 class PPInclusion : public PPCallbacks {
 public:
   explicit PPInclusion(SourceManager *SM, Rewriter *Rewrite)
@@ -479,24 +508,31 @@ class MyASTConsumer : public ASTConsumer {
 public:
   MyASTConsumer(Rewriter &R)
       : HandlerForVar(R), HandlerForClass(R),
-        HandlerForCalledFunc(R), HandlerForCXXMethod(R), HandlerForField(R), HandlerForStruct(R), HandlerForUnion(R), HandlerForNamedDecl(R) {
+        HandlerForCalledFunc(R), HandlerForCXXMethod(R), HandlerForField(R), HandlerForStruct(R),
+        HandlerForUnion(R), HandlerForNamedDecl(R), HandlerForDeclRefExpr(R) {
 #if 1
     if (CO_FUNCTION || CO_ALL) {
       Matcher.addMatcher(functionDecl().bind("funcdecl"), &HandlerForCalledFunc);}
     if (CO_VAR || CO_ALL) {
       Matcher.addMatcher(varDecl(anyOf(unless(hasDescendant(expr(anything()))), hasDescendant(expr(anything()).bind("expr")))).bind("vardecl"),&HandlerForVar);}
     if (CO_CLASS || CO_ALL) {
-      Matcher.addMatcher(recordDecl(isClass()).bind("classdecl"),&HandlerForClass);}
+      // we are excluding the definitions here, since class declarations and definitions
+      // will match separately, so for a class that is declared and defined in the same
+      // location, we'll get two matches. A declaration can happen without a definition
+      // but the other way around cannot be true.
+      Matcher.addMatcher(recordDecl(allOf(isClass(), unless(isDefinition()))).bind("classdecl"),&HandlerForClass);}
     if (CO_MEM_FUNCTION || CO_ALL) {
       Matcher.addMatcher(cxxMethodDecl().bind("cxxmethoddecl"), &HandlerForCXXMethod);}
     if (CO_MEMVAR || CO_ALL) {
       Matcher.addMatcher(fieldDecl().bind("fielddecl"), &HandlerForField);}
     if (CO_STRUCT || CO_ALL) {
-      Matcher.addMatcher(recordDecl(isStruct()).bind("structdecl"), &HandlerForStruct);}
+      Matcher.addMatcher(recordDecl(allOf(isStruct(), unless(isDefinition()))).bind("structdecl"), &HandlerForStruct);}
     if (CO_UNION || CO_ALL) {
       Matcher.addMatcher(recordDecl(isUnion()).bind("uniondecl"), &HandlerForUnion);}
     if (CO_NAMEDDECL) {
       Matcher.addMatcher(namedDecl().bind("namedecl"), &HandlerForNamedDecl);}
+    if (CO_DECLREFEXPR) {
+     Matcher.addMatcher(declRefExpr().bind("declrefexpr"), &HandlerForDeclRefExpr);}
 #endif
   }
 
@@ -513,6 +549,7 @@ private:
   StructHandler HandlerForStruct;
   UnionHandler HandlerForUnion;
   NamedDeclHandler HandlerForNamedDecl;
+  DeclRefExprHandler HandlerForDeclRefExpr;
   MatchFinder Matcher;
 };
 /*************************************************************************************************/
