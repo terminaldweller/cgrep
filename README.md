@@ -14,7 +14,7 @@ make
 ## Usage
 A simple usage example:<br/>
 ```bash
-cgrep --func --var --regex n[aA]m ./cgrep.cpp
+cgrep -A 1 -B 1 --func --var --regex n[aA]m ./cgrep.cpp
 ```
 Pleade do note that the regex will pass through both C++ and the regex engine, so if you would want to escape `\`, the regex you pass as the commandline arg would be `\\\\` instead of the normal `\\`.<br/>
 In order for cgrep to work, you need to have a compilation database, tools like cmake can generate one for you.<br/>
@@ -26,9 +26,14 @@ Here's an option list though it might not be necessarily up-to-date.<br/>
 For an up-to-date list, you can run `crep --help`.<br/>
 
 ```bash
+  -A=<int>                   - same as grep, how many lines after the matched line to print
+  -B=<int>                   - same as grep, howm many lines before the matched line to print
   -all                       - turns on all switches other than nameddecl
   -awk                       - outputs location in a gawk freidnly format
+  -call                      - match function calls only
   -class                     - match class declrations only
+  -cxxcall                   - match member function calls only
+  -declrefexpr               - matches declrefexpr
   -dir=<string>              - recursively goes through all the files and directories. assumes compilation databases are present for all source files.
   -func                      - match functions only
   -header                    - match headers in header inclusions
@@ -41,7 +46,6 @@ For an up-to-date list, you can run `crep --help`.<br/>
   -struct                    - match structures only
   -syshdr                    - match identifiers in system header as well
   -union                     - match unions only
-  -var                       - map variables only
-
+  -var                       - match variables only
 ```
 `cgrep` is a clang tool, so it will accecpt all valid clang commandline options.<br/>
