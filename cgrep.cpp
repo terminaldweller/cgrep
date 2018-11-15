@@ -45,7 +45,9 @@ cl::opt<std::string> CO_DIRECTORY("dir", cl::desc("recursively goes through all 
 cl::opt<std::string> CO_REGEX("regex", cl::desc("the regex to match against"), cl::init(""), cl::cat(CGrepCat), cl::Required); //done
 cl::opt<bool> CO_FUNCTION("func", cl::desc("match functions only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_MEM_FUNCTION("memfunc", cl::desc("match member functions only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_VAR("var", cl::desc("map variables only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<bool> CO_VAR("var", cl::desc("match variables only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<bool> CO_CALL("call", cl::desc("match function calls only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
+cl::opt<bool> CO_CXXCALL("cxxcall", cl::desc("match member function calls only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_MEMVAR("memvar", cl::desc("match member variables only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_CLASS("class", cl::desc("match class declrations only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_STRUCT("struct", cl::desc("match structures only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
@@ -54,7 +56,7 @@ cl::opt<bool> CO_MACRO("macro", cl::desc("match macro definitions"), cl::init(fa
 cl::opt<bool> CO_HEADER("header", cl::desc("match headers in header inclusions"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_ALL("all", cl::desc("turns on all switches other than nameddecl"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_NAMEDDECL("nameddecl", cl::desc("matches all named declrations"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_DECLREFEXPR("declrefexpr", cl::desc("matches declrefexpr"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_DECLREFEXPR("declrefexpr", cl::desc("matches declrefexpr"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_AWK("awk", cl::desc("outputs location in a gawk freidnly format"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
 cl::opt<bool> CO_SYSHDR("syshdr", cl::desc("match identifiers in system header as well"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
 cl::opt<bool> CO_MAINFILE("mainfile", cl::desc("mathc identifiers in the main file only"), cl::init(true), cl::cat(CGrepCat), cl::Optional); //done
@@ -219,7 +221,7 @@ public:
     if (VD) {
       //IdentifierInfo* ID = VD->getIdentifier();
       //SourceRange SR = VD->getSourceRange();
-      SourceRange SR = VD->getUnderlyingDecl()->getSourceRange();
+      SourceRange SR = VD->getSourceRange();
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
@@ -227,7 +229,7 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = VD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        //std::cout << YELLOW << MR.SourceManager->getSpellingColumnNumber(VD->getBeginLoc()) << ":"<< MR.SourceManager->getSpellingColumnNumber(VD->getEndLoc()) << NORMAL << "\n";
+        std::cout << YELLOW << MR.SourceManager->getSpellingColumnNumber(VD->getLocation()) << ":"<< MR.SourceManager->getSpellingColumnNumber(VD->getEndLoc()) << NORMAL << "\n";
         //std::cout << BLUE << ID->getLength() << NORMAL << "\n";
         output_handler(MR, SR, *MR.SourceManager, true);
       }
@@ -426,9 +428,62 @@ class DeclRefExprHandler : public MatchFinder::MatchCallback {
         if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
         const NamedDecl* ND = DRE->getFoundDecl();
         std::string name = ND->getNameAsString();
+        std::cout << BLUE << name << NORMAL << "\n";
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, true);
+        output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false);
       }
+      }
+    }
+
+  private:
+    Rewriter &Rewrite [[maybe_unused]];
+};
+/*************************************************************************************************/
+class CallExprHandler : public MatchFinder::MatchCallback {
+  public:
+    CallExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR) {
+      const CallExpr* CE = MR.Nodes.getNodeAs<clang::CallExpr>("callexpr");
+      if (CE) {
+        SourceLocation SL = CE->getBeginLoc();
+        SourceLocation SLE = CE->getEndLoc();
+        CheckSLValidity(SL);
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+        if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
+        if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+        const NamedDecl* ND = CE->getDirectCallee();
+        if (ND) return void();
+        std::string name = ND->getNameAsString();
+        if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+          output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false);
+        }
+      }
+    }
+
+  private:
+    Rewriter &Rewrite [[maybe_unused]];
+};
+/*************************************************************************************************/
+class CXXCallExprHandler : public MatchFinder::MatchCallback {
+  public:
+    CXXCallExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR) {
+      const CXXMemberCallExpr* CE = MR.Nodes.getNodeAs<clang::CXXMemberCallExpr>("cxxcallexpr");
+      if (CE) {
+        SourceRange SR = CE->getSourceRange();
+        SourceLocation SL = SR.getBegin();
+        CheckSLValidity(SL);
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+        if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
+        if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+        const NamedDecl* ND = CE->getDirectCallee();
+        if (ND) return void();
+        std::string name = ND->getNameAsString();
+        if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+          output_handler(MR, SR, *MR.SourceManager, true);
+        }
       }
     }
 
@@ -509,7 +564,8 @@ public:
   MyASTConsumer(Rewriter &R)
       : HandlerForVar(R), HandlerForClass(R),
         HandlerForCalledFunc(R), HandlerForCXXMethod(R), HandlerForField(R), HandlerForStruct(R),
-        HandlerForUnion(R), HandlerForNamedDecl(R), HandlerForDeclRefExpr(R) {
+        HandlerForUnion(R), HandlerForNamedDecl(R), HandlerForDeclRefExpr(R), HandlerForCallExpr(R),
+        HandlerForCXXCallExpr(R) {
 #if 1
     if (CO_FUNCTION || CO_ALL) {
       Matcher.addMatcher(functionDecl().bind("funcdecl"), &HandlerForCalledFunc);}
@@ -531,8 +587,12 @@ public:
       Matcher.addMatcher(recordDecl(isUnion()).bind("uniondecl"), &HandlerForUnion);}
     if (CO_NAMEDDECL) {
       Matcher.addMatcher(namedDecl().bind("namedecl"), &HandlerForNamedDecl);}
-    if (CO_DECLREFEXPR) {
+    if (CO_DECLREFEXPR || CO_ALL) {
      Matcher.addMatcher(declRefExpr().bind("declrefexpr"), &HandlerForDeclRefExpr);}
+    if (CO_CALL || CO_ALL) {
+      Matcher.addMatcher(callExpr().bind("callexpr"), &HandlerForCallExpr);}
+    if (CO_CXXCALL || CO_ALL) {
+      Matcher.addMatcher(cxxMemberCallExpr().bind("cxxcallexpr"), &HandlerForCXXCallExpr);}
 #endif
   }
 
@@ -550,6 +610,8 @@ private:
   UnionHandler HandlerForUnion;
   NamedDeclHandler HandlerForNamedDecl;
   DeclRefExprHandler HandlerForDeclRefExpr;
+  CallExprHandler HandlerForCallExpr;
+  CXXCallExprHandler HandlerForCXXCallExpr;
   MatchFinder Matcher;
 };
 /*************************************************************************************************/
