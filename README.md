@@ -11,6 +11,8 @@ git submodule init
 git submodule update
 make
 ```
+The makefile assumes clang is called `clang` and llvm-config is called `llvm-config`. On some distros, the names might not be the same. In those cases use `CXX` and `LLVM_CONF` to pass the values to the makefile.<br/>
+
 ## Usage
 A simple usage example:<br/>
 ```bash
