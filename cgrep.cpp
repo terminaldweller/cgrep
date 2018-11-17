@@ -532,6 +532,11 @@ public:
                                   const clang::Module *Imported,
                                   SrcMgr::CharacteristicKind FileType) {
 #endif
+    // FIXME-we are not checking whether the header has been found.
+    // this callback will be called when there is a header inclusion directive in
+    // the source file we are running through, not when the header is found.
+    // if the header is not there, we'll be dereferencing a null pointer somewhere
+    // and segfault.
     if (CO_HEADER) {
       CheckSLValidity(HashLoc);
       SourceLocation SL = Devi::SourceLocationHasMacro(HashLoc, Rewrite, "start");
