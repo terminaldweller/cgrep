@@ -71,6 +71,14 @@ cl::opt<int> CO_B("B", cl::desc("same as grep, howm many lines before the matche
 #define REGEX_PP(RX_STR) regex_preprocessor(RX_STR)
 #endif
 
+#if __clang_major__ <= 6
+#define DEVI_GETLOCSTART getLocStart
+#define DEVI_GETLOCEND getLocEnd
+#elif __clang_major__ >= 8
+#define DEVI_GETLOCSTART getBeginLoc
+#define DEVI_GETLOCEND getEndLoc
+#endif
+
 #define RED "\033[1;31m"
 #define CYAN "\033[1;36m"
 #define GREEN "\033[1;32m"
@@ -229,7 +237,7 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = VD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::cout << YELLOW << MR.SourceManager->getSpellingColumnNumber(VD->getLocation()) << ":"<< MR.SourceManager->getSpellingColumnNumber(VD->getEndLoc()) << NORMAL << "\n";
+        std::cout << YELLOW << MR.SourceManager->getSpellingColumnNumber(VD->getLocation()) << ":"<< MR.SourceManager->getSpellingColumnNumber(VD->DEVI_GETLOCEND()) << NORMAL << "\n";
         //std::cout << BLUE << ID->getLength() << NORMAL << "\n";
         output_handler(MR, SR, *MR.SourceManager, true);
       }
@@ -332,7 +340,7 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        output_handler(MR, SourceRange(RD->getBeginLoc(), RD->getEndLoc()), *MR.SourceManager, true);
+        output_handler(MR, SourceRange(RD->DEVI_GETLOCSTART(), RD->DEVI_GETLOCEND()), *MR.SourceManager, true);
       }
     }
   }
@@ -420,8 +428,8 @@ class DeclRefExprHandler : public MatchFinder::MatchCallback {
     virtual void run(const MatchFinder::MatchResult &MR) {
       const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("declrefexpr");
       if (DRE) {
-        SourceLocation SL = DRE->getBeginLoc();
-        SourceLocation SLE = DRE->getEndLoc();
+        SourceLocation SL = DRE->DEVI_GETLOCSTART();
+        SourceLocation SLE = DRE->DEVI_GETLOCEND();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
         if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
@@ -446,8 +454,8 @@ class CallExprHandler : public MatchFinder::MatchCallback {
     virtual void run(const MatchFinder::MatchResult &MR) {
       const CallExpr* CE = MR.Nodes.getNodeAs<clang::CallExpr>("callexpr");
       if (CE) {
-        SourceLocation SL = CE->getBeginLoc();
-        SourceLocation SLE = CE->getEndLoc();
+        SourceLocation SL = CE->DEVI_GETLOCSTART();
+        SourceLocation SLE = CE->DEVI_GETLOCEND();
         CheckSLValidity(SL);
         SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
         if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
