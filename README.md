@@ -1,3 +1,5 @@
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/bloodstalker/cgrep.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bloodstalker/cgrep/context:cpp)
+
 # cgrep
 `grep` for C/C++ source files.<br/>
 cgrep uses libtooling, the latest tested version of LLVM is trunk 340121.<br/>
