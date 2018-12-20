@@ -16,4 +16,4 @@ before_script:
   - git submodule update
 
 script: 
-  - make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0 -j2
+  - make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0
