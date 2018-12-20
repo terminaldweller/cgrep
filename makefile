@@ -28,7 +28,8 @@ LLVM_CONF?=llvm-config
 LLVM_CXX_FLAGS=$(shell $(LLVM_CONF) --cxxflags)
 LLVM_CXX_FLAGS+=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include\
  -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
- -stdlib=libstdc++ -std=c++17 -fexceptions
+ -std=c++17 -fexceptions
+#LLVM_LD_FLAGS=-Wl,--start-group $(shell $(LLVM_CONF) --libs) -Wl, --end-group
 LLVM_LD_FLAGS=-Wl,--start-group -lclangAST -lclangAnalysis -lclangBasic\
  -lclangDriver -lclangEdit -lclangFrontend -lclangFrontendTool\
  -lclangLex -lclangParse -lclangSema -lclangEdit -lclangASTMatchers\
@@ -75,7 +76,7 @@ LD_FLAGS+=$(EXTRA_LD_FLAGS)
 
 .PHONY:all clean help ASM SO TAGS
 
-all:$(TARGET)
+all: pch.hpp.gch $(TARGET)
 
 everything:$(TARGET) A ASM SO $(TARGET)-dbg TAGS $(TARGET)-cov
 
@@ -89,14 +90,17 @@ depend:.depend
 
 -include ./.depend
 
-.cpp.o:
-	$(CXX) $(CXX_FLAGS) -c $< -o $@
+%.o:%.cpp
+	$(CXX) -include-pch pch.hpp.gch $(CXX_FLAGS) -c $< -o $@
 
 %.odbg:%.cpp
 	$(CXX) $(CXX_FLAGS) -g -c $< -o $@
 
 %.ocov:%.cpp
 	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
+
+pch.hpp.gch: pch.hpp
+	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 ./cfe-extra/cfe_extra.o:./cfe-extra/cfe_extra.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
@@ -162,12 +166,13 @@ format:
 	- clang-format -i $(SRCS) $(HDRS)
 
 clean:
-	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov ./keccak-tiny/*.o ./keccak-tiny/*.ocov ./keccak-tiny/*.odbg
+	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov
 
 deepclean: clean
 	- rm tags
 	- rm .depend
 	- $(MAKE) -C ./cfe-extra clean
+	- rm *.gch
 
 help:
 	@echo "--all is the default target, runs $(TARGET) target"
