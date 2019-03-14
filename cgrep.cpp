@@ -7,8 +7,8 @@
  * */
 /*************************************************************************************************/
 /*included modules*/
-#include "./pch.hpp"
 #include "./cfe-extra/cfe_extra.h"
+#include "./pch.hpp"
 /*************************************************************************************************/
 /*used namespaces*/
 using namespace llvm;
@@ -19,28 +19,77 @@ using namespace clang::tooling;
 /*************************************************************************************************/
 namespace {
 static llvm::cl::OptionCategory CGrepCat("cgrep options");
-cl::opt<std::string> CO_DIRECTORY("dir", cl::desc("recursively goes through all the files and directories. assumes compilation databases are present for all source files."), cl::init(""), cl::cat(CGrepCat), cl::Optional);
-cl::opt<std::string> CO_REGEX("regex", cl::desc("the regex to match against"), cl::init(""), cl::cat(CGrepCat), cl::Required); //done
-cl::opt<bool> CO_FUNCTION("func", cl::desc("match functions only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_MEM_FUNCTION("memfunc", cl::desc("match member functions only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_VAR("var", cl::desc("match variables only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_CALL("call", cl::desc("match function calls only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_CXXCALL("cxxcall", cl::desc("match member function calls only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_MEMVAR("memvar", cl::desc("match member variables only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_CLASS("class", cl::desc("match class declrations only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_STRUCT("struct", cl::desc("match structures only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_UNION("union", cl::desc("match unions only"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_MACRO("macro", cl::desc("match macro definitions"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_HEADER("header", cl::desc("match headers in header inclusions"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_ALL("all", cl::desc("turns on all switches other than nameddecl"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_NAMEDDECL("nameddecl", cl::desc("matches all named declrations"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_DECLREFEXPR("declrefexpr", cl::desc("matches declrefexpr"), cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_AWK("awk", cl::desc("outputs location in a gawk freidnly format"), cl::init(false), cl::cat(CGrepCat), cl::Optional);
-cl::opt<bool> CO_SYSHDR("syshdr", cl::desc("match identifiers in system header as well"), cl::init(false), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<bool> CO_MAINFILE("mainfile", cl::desc("mathc identifiers in the main file only"), cl::init(true), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<int> CO_A("A", cl::desc("same as grep, how many lines after the matched line to print"), cl::init(0), cl::cat(CGrepCat), cl::Optional); //done
-cl::opt<int> CO_B("B", cl::desc("same as grep, howm many lines before the matched line to print"), cl::init(0), cl::cat(CGrepCat), cl::Optional); //done
-}
+cl::opt<std::string> CO_DIRECTORY(
+    "dir",
+    cl::desc("recursively goes through all the files and directories. assumes "
+             "compilation databases are present for all source files."),
+    cl::init(""), cl::cat(CGrepCat), cl::Optional);
+cl::opt<std::string> CO_REGEX("regex", cl::desc("the regex to match against"),
+                              cl::init(""), cl::cat(CGrepCat),
+                              cl::Required); // done
+cl::opt<bool> CO_FUNCTION("func", cl::desc("match functions only"),
+                          cl::init(false), cl::cat(CGrepCat),
+                          cl::Optional); // done
+cl::opt<bool> CO_MEM_FUNCTION("memfunc",
+                              cl::desc("match member functions only"),
+                              cl::init(false), cl::cat(CGrepCat),
+                              cl::Optional); // done
+cl::opt<bool> CO_VAR("var", cl::desc("match variables only"), cl::init(false),
+                     cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool> CO_CALL("call", cl::desc("match function calls only"),
+                      cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool> CO_CXXCALL("cxxcall",
+                         cl::desc("match member function calls only"),
+                         cl::init(false), cl::cat(CGrepCat),
+                         cl::Optional); // done
+cl::opt<bool> CO_MEMVAR("memvar", cl::desc("match member variables only"),
+                        cl::init(false), cl::cat(CGrepCat),
+                        cl::Optional); // done
+cl::opt<bool> CO_CLASS("class", cl::desc("match class declrations only"),
+                       cl::init(false), cl::cat(CGrepCat),
+                       cl::Optional); // done
+cl::opt<bool> CO_STRUCT("struct", cl::desc("match structures only"),
+                        cl::init(false), cl::cat(CGrepCat),
+                        cl::Optional); // done
+cl::opt<bool> CO_UNION("union", cl::desc("match unions only"), cl::init(false),
+                       cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool> CO_MACRO("macro", cl::desc("match macro definitions"),
+                       cl::init(false), cl::cat(CGrepCat),
+                       cl::Optional); // done
+cl::opt<bool> CO_HEADER("header",
+                        cl::desc("match headers in header inclusions"),
+                        cl::init(false), cl::cat(CGrepCat),
+                        cl::Optional); // done
+cl::opt<bool> CO_ALL("all",
+                     cl::desc("turns on all switches other than nameddecl"),
+                     cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool> CO_NAMEDDECL("nameddecl",
+                           cl::desc("matches all named declrations"),
+                           cl::init(false), cl::cat(CGrepCat),
+                           cl::Optional); // done
+cl::opt<bool> CO_DECLREFEXPR("declrefexpr", cl::desc("matches declrefexpr"),
+                             cl::init(false), cl::cat(CGrepCat),
+                             cl::Optional); // done
+cl::opt<bool> CO_AWK("awk",
+                     cl::desc("outputs location in a gawk freidnly format"),
+                     cl::init(false), cl::cat(CGrepCat), cl::Optional);
+cl::opt<bool> CO_SYSHDR("syshdr",
+                        cl::desc("match identifiers in system header as well"),
+                        cl::init(false), cl::cat(CGrepCat),
+                        cl::Optional); // done
+cl::opt<bool> CO_MAINFILE("mainfile",
+                          cl::desc("mathc identifiers in the main file only"),
+                          cl::init(true), cl::cat(CGrepCat),
+                          cl::Optional); // done
+cl::opt<int> CO_A(
+    "A",
+    cl::desc("same as grep, how many lines after the matched line to print"),
+    cl::init(0), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<int> CO_B(
+    "B",
+    cl::desc("same as grep, howm many lines before the matched line to print"),
+    cl::init(0), cl::cat(CGrepCat), cl::Optional); // done
+} // namespace
 /*************************************************************************************************/
 #if 1
 #define REGEX_PP(RX_STR) RX_STR
@@ -68,7 +117,7 @@ cl::opt<int> CO_B("B", cl::desc("same as grep, howm many lines before the matche
 #define DARKGRAY "\033[1;30m"
 #define YELLOW "\033[1;33m"
 #define NORMAL "\033[0m"
-#define CLEAR	"\033[2J"
+#define CLEAR "\033[2J"
 
 /**
  * @brief does some preprocessing on the regex string we get as input
@@ -86,26 +135,34 @@ bool regex_handler(std::string rx_str, std::string identifier_name) {
   return std::regex_search(identifier_name, result, rx);
 }
 
-void output_handler(MatchFinder::MatchResult &MR, SourceLocation SL, SourceManager &SM, bool isdecl) {
-}
+void output_handler(MatchFinder::MatchResult &MR, SourceLocation SL,
+                    SourceManager &SM, bool isdecl) {}
 
-void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR, SourceManager &SM, bool isdecl) {
+void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
+                    SourceManager &SM, bool isdecl) {
   std::ifstream mainfile;
   mainfile.open(MR.SourceManager->getFilename(SR.getBegin()).str());
   auto linenumber = MR.SourceManager->getSpellingLineNumber(SR.getBegin());
-  auto columnnumber_start = MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
-  auto columnnumber_end = MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1 - columnnumber_start;
-  //std::cout << MAGENTA << columnnumber_start << ":" << columnnumber_end << NORMAL << "\n";
-  std::cout << MAGENTA << SR.getBegin().printToString(SM) << ":" << SR.getEnd().printToString(SM) << NORMAL << "\n";
+  auto columnnumber_start =
+      MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
+  auto columnnumber_end =
+      MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1 -
+      columnnumber_start;
+  // std::cout << MAGENTA << columnnumber_start << ":" << columnnumber_end <<
+  // NORMAL << "\n";
+  std::cout << MAGENTA << SR.getBegin().printToString(SM) << ":"
+            << SR.getEnd().printToString(SM) << NORMAL << "\n";
   unsigned line_range_begin = linenumber - CO_B;
   unsigned line_range_end = linenumber + CO_A;
   std::string line;
   unsigned line_nu = 0;
-  while(getline(mainfile, line)) {
+  while (getline(mainfile, line)) {
     line_nu++;
     if (line_nu >= line_range_begin && line_nu <= line_range_end) {
       if (line_nu == linenumber) {
-        std::cout << RED << MR.SourceManager->getFilename(SR.getBegin()).str() << ":" << linenumber << ":" <<columnnumber_start << ":" << NORMAL;
+        std::cout << RED << MR.SourceManager->getFilename(SR.getBegin()).str()
+                  << ":" << linenumber << ":" << columnnumber_start << ":"
+                  << NORMAL;
         for (unsigned i = 0; i < line.length(); ++i) {
           if (i >= columnnumber_start && i <= columnnumber_end) {
             std::cout << RED << line[i] << NORMAL;
@@ -113,7 +170,8 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR, SourceMa
             std::cout << line[i];
           }
         }
-        if (isdecl) std::cout << GREEN << "\t<---defined here" << NORMAL << "\n";
+        if (isdecl)
+          std::cout << GREEN << "\t<---defined here" << NORMAL << "\n";
       } else {
         std::cout << line << "\n";
       }
@@ -124,22 +182,24 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR, SourceMa
 }
 
 /**
- * @brief Gets the list of all directories and sub-directories starting from a base directory.
+ * @brief Gets the list of all directories and sub-directories starting from a
+ * base directory.
  * @param _path where the the base directory is.
  * @return Returns the list of all found dirs.
  */
 std::vector<std::string> listDirs(std::string _path) {
   std::vector<std::string> dummy_;
-  DIR* dir_;
-  struct dirent* ent_;
+  DIR *dir_;
+  struct dirent *ent_;
   if ((dir_ = opendir(_path.c_str())) != nullptr) {
-    while((ent_ = readdir(dir_)) != nullptr) {
-      std::cout << "name: "  << ent_->d_name << "\ttype:" << int(ent_->d_type) << "\n";
-      if (ent_->d_type == DT_DIR) {}
+    while ((ent_ = readdir(dir_)) != nullptr) {
+      std::cout << "name: " << ent_->d_name << "\ttype:" << int(ent_->d_type)
+                << "\n";
+      if (ent_->d_type == DT_DIR) {
+      }
       dummy_.push_back(ent_->d_name);
     }
-  }
-  else {
+  } else {
     perror("could not open directory.");
   }
   return dummy_;
@@ -150,31 +210,38 @@ public:
   FunctionHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
-    const FunctionDecl *FD = MR.Nodes.getNodeAs<clang::FunctionDecl>("funcdecl");
+    const FunctionDecl *FD =
+        MR.Nodes.getNodeAs<clang::FunctionDecl>("funcdecl");
     if (FD) {
       DeclarationNameInfo DNI = FD->getNameInfo();
       SourceRange SR = DNI.getSourceRange();
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
-      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
       std::string name = FD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         std::ifstream mainfile;
         mainfile.open(MR.SourceManager->getFilename(SL).str());
         auto linenumber = MR.SourceManager->getSpellingLineNumber(SL);
-        auto columnnumber_start = MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
-        auto columnnumber_end = columnnumber_start + DNI.getAsString().length() - 1;
+        auto columnnumber_start =
+            MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
+        auto columnnumber_end =
+            columnnumber_start + DNI.getAsString().length() - 1;
         unsigned line_range_begin = linenumber - CO_B;
         unsigned line_range_end = linenumber + CO_A;
         std::string line;
         unsigned line_nu = 0;
-        while(getline(mainfile, line)) {
+        while (getline(mainfile, line)) {
           line_nu++;
           if (line_nu >= line_range_begin && line_nu <= line_range_end) {
             if (line_nu == linenumber) {
-              std::cout << RED << MR.SourceManager->getFilename(SL).str() << ":" << linenumber << ":" <<columnnumber_start << ":" << NORMAL;
+              std::cout << RED << MR.SourceManager->getFilename(SL).str() << ":"
+                        << linenumber << ":" << columnnumber_start << ":"
+                        << NORMAL;
               for (unsigned i = 1; i < line.length(); ++i) {
                 if (i >= columnnumber_start && i <= columnnumber_end) {
                   std::cout << RED << line[i] << NORMAL;
@@ -205,18 +272,25 @@ public:
   virtual void run(const MatchFinder::MatchResult &MR) {
     const FieldDecl *VD = MR.Nodes.getNodeAs<clang::FieldDecl>("fielddecl");
     if (VD) {
-      //IdentifierInfo* ID = VD->getIdentifier();
-      //SourceRange SR = VD->getSourceRange();
+      // IdentifierInfo* ID = VD->getIdentifier();
+      // SourceRange SR = VD->getSourceRange();
       SourceRange SR = VD->getSourceRange();
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
-      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
       std::string name = VD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::cout << YELLOW << MR.SourceManager->getSpellingColumnNumber(VD->getLocation()) << ":"<< MR.SourceManager->getSpellingColumnNumber(VD->DEVI_GETLOCEND()) << NORMAL << "\n";
-        //std::cout << BLUE << ID->getLength() << NORMAL << "\n";
+        std::cout
+            << YELLOW
+            << MR.SourceManager->getSpellingColumnNumber(VD->getLocation())
+            << ":"
+            << MR.SourceManager->getSpellingColumnNumber(VD->DEVI_GETLOCEND())
+            << NORMAL << "\n";
+        // std::cout << BLUE << ID->getLength() << NORMAL << "\n";
         output_handler(MR, SR, *MR.SourceManager, true);
       }
     }
@@ -231,31 +305,38 @@ public:
   CXXMethodHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
-    const CXXMethodDecl *MD = MR.Nodes.getNodeAs<clang::CXXMethodDecl>("cxxmethoddecl");
+    const CXXMethodDecl *MD =
+        MR.Nodes.getNodeAs<clang::CXXMethodDecl>("cxxmethoddecl");
     if (MD) {
       DeclarationNameInfo DNI = MD->getNameInfo();
       SourceRange SR = DNI.getSourceRange();
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
-      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
       std::string name = MD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         std::ifstream mainfile;
         mainfile.open(MR.SourceManager->getFilename(SL).str());
         auto linenumber = MR.SourceManager->getSpellingLineNumber(SL);
-        auto columnnumber_start = MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
-        auto columnnumber_end = columnnumber_start + DNI.getAsString().length() - 1;
+        auto columnnumber_start =
+            MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
+        auto columnnumber_end =
+            columnnumber_start + DNI.getAsString().length() - 1;
         unsigned line_range_begin = linenumber - CO_B;
         unsigned line_range_end = linenumber + CO_A;
         std::string line;
         unsigned line_nu = 0;
-        while(getline(mainfile, line)) {
+        while (getline(mainfile, line)) {
           line_nu++;
           if (line_nu >= line_range_begin && line_nu <= line_range_end) {
             if (line_nu == linenumber) {
-              std::cout << RED << MR.SourceManager->getFilename(SL).str() << ":" << linenumber << ":" <<columnnumber_start << ":" << NORMAL;
+              std::cout << RED << MR.SourceManager->getFilename(SL).str() << ":"
+                        << linenumber << ":" << columnnumber_start << ":"
+                        << NORMAL;
               for (unsigned i = 1; i < line.length(); ++i) {
                 if (i >= columnnumber_start && i <= columnnumber_end) {
                   std::cout << RED << line[i] << NORMAL;
@@ -290,8 +371,10 @@ public:
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
-      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
       std::string name = VD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         output_handler(MR, SR, *MR.SourceManager, true);
@@ -314,11 +397,15 @@ public:
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
-      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        output_handler(MR, SourceRange(RD->DEVI_GETLOCSTART(), RD->DEVI_GETLOCEND()), *MR.SourceManager, true);
+        output_handler(
+            MR, SourceRange(RD->DEVI_GETLOCSTART(), RD->DEVI_GETLOCEND()),
+            *MR.SourceManager, true);
       }
     }
   }
@@ -338,8 +425,10 @@ public:
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
-      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         output_handler(MR, SR, *MR.SourceManager, true);
@@ -362,8 +451,10 @@ public:
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
-      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         output_handler(MR, SR, *MR.SourceManager, true);
@@ -386,8 +477,10 @@ public:
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
-      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         output_handler(MR, SR, *MR.SourceManager, true);
@@ -400,81 +493,91 @@ private:
 };
 /*************************************************************************************************/
 class DeclRefExprHandler : public MatchFinder::MatchCallback {
-  public:
-    DeclRefExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+public:
+  DeclRefExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-    virtual void run(const MatchFinder::MatchResult &MR) {
-      const DeclRefExpr* DRE = MR.Nodes.getNodeAs<clang::DeclRefExpr>("declrefexpr");
-      if (DRE) {
-        SourceLocation SL = DRE->DEVI_GETLOCSTART();
-        SourceLocation SLE = DRE->DEVI_GETLOCEND();
-        CheckSLValidity(SL);
-        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-        if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
-        if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
-        const NamedDecl* ND = DRE->getFoundDecl();
-        std::string name = ND->getNameAsString();
-        std::cout << BLUE << name << NORMAL << "\n";
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    const DeclRefExpr *DRE =
+        MR.Nodes.getNodeAs<clang::DeclRefExpr>("declrefexpr");
+    if (DRE) {
+      SourceLocation SL = DRE->DEVI_GETLOCSTART();
+      SourceLocation SLE = DRE->DEVI_GETLOCEND();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
+      const NamedDecl *ND = DRE->getFoundDecl();
+      std::string name = ND->getNameAsString();
+      std::cout << BLUE << name << NORMAL << "\n";
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false);
       }
-      }
     }
+  }
 
-  private:
-    Rewriter &Rewrite [[maybe_unused]];
+private:
+  Rewriter &Rewrite [[maybe_unused]];
 };
 /*************************************************************************************************/
 class CallExprHandler : public MatchFinder::MatchCallback {
-  public:
-    CallExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+public:
+  CallExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-    virtual void run(const MatchFinder::MatchResult &MR) {
-      const CallExpr* CE = MR.Nodes.getNodeAs<clang::CallExpr>("callexpr");
-      if (CE) {
-        SourceLocation SL = CE->DEVI_GETLOCSTART();
-        SourceLocation SLE = CE->DEVI_GETLOCEND();
-        CheckSLValidity(SL);
-        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-        if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
-        if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
-        const NamedDecl* ND = CE->getDirectCallee();
-        if (ND) return void();
-        std::string name = ND->getNameAsString();
-        if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-          output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false);
-        }
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    const CallExpr *CE = MR.Nodes.getNodeAs<clang::CallExpr>("callexpr");
+    if (CE) {
+      SourceLocation SL = CE->DEVI_GETLOCSTART();
+      SourceLocation SLE = CE->DEVI_GETLOCEND();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
+      const NamedDecl *ND = CE->getDirectCallee();
+      if (ND)
+        return void();
+      std::string name = ND->getNameAsString();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false);
       }
     }
+  }
 
-  private:
-    Rewriter &Rewrite [[maybe_unused]];
+private:
+  Rewriter &Rewrite [[maybe_unused]];
 };
 /*************************************************************************************************/
 class CXXCallExprHandler : public MatchFinder::MatchCallback {
-  public:
-    CXXCallExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+public:
+  CXXCallExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-    virtual void run(const MatchFinder::MatchResult &MR) {
-      const CXXMemberCallExpr* CE = MR.Nodes.getNodeAs<clang::CXXMemberCallExpr>("cxxcallexpr");
-      if (CE) {
-        SourceRange SR = CE->getSourceRange();
-        SourceLocation SL = SR.getBegin();
-        CheckSLValidity(SL);
-        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-        if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL)) return void();
-        if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL)) return void();
-        const NamedDecl* ND = CE->getDirectCallee();
-        if (ND) return void();
-        std::string name = ND->getNameAsString();
-        if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-          output_handler(MR, SR, *MR.SourceManager, true);
-        }
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    const CXXMemberCallExpr *CE =
+        MR.Nodes.getNodeAs<clang::CXXMemberCallExpr>("cxxcallexpr");
+    if (CE) {
+      SourceRange SR = CE->getSourceRange();
+      SourceLocation SL = SR.getBegin();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
+      const NamedDecl *ND = CE->getDirectCallee();
+      if (ND)
+        return void();
+      std::string name = ND->getNameAsString();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        output_handler(MR, SR, *MR.SourceManager, true);
       }
     }
+  }
 
-  private:
-    Rewriter &Rewrite [[maybe_unused]];
+private:
+  Rewriter &Rewrite [[maybe_unused]];
 };
 /*************************************************************************************************/
 class PPInclusion : public PPCallbacks {
@@ -488,8 +591,10 @@ public:
       SourceLocation SL = MD->getLocation();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, SM, SL)) return void();
-      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, SM, SL)) return void();
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, SM, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, SM, SL))
+        return void();
       std::string name = MacroNameTok.getIdentifierInfo()->getName().str();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         std::cout << name << "\t";
@@ -519,15 +624,18 @@ public:
                                   SrcMgr::CharacteristicKind FileType) {
 #endif
     // FIXME-we are not checking whether the header has been found.
-    // this callback will be called when there is a header inclusion directive in
-    // the source file we are running through, not when the header is found.
-    // if the header is not there, we'll be dereferencing a null pointer somewhere
-    // and segfault.
+    // this callback will be called when there is a header inclusion directive
+    // in the source file we are running through, not when the header is found.
+    // if the header is not there, we'll be dereferencing a null pointer
+    // somewhere and segfault.
     if (CO_HEADER) {
       CheckSLValidity(HashLoc);
-      SourceLocation SL = Devi::SourceLocationHasMacro(HashLoc, Rewrite, "start");
-      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, SM, SL)) return void();
-      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, SM, SL)) return void();
+      SourceLocation SL =
+          Devi::SourceLocationHasMacro(HashLoc, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, SM, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, SM, SL))
+        return void();
       std::string name = FileName.str();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         std::cout << name << "\t";
@@ -541,7 +649,8 @@ private:
   Rewriter &Rewrite [[maybe_unused]];
 };
 /*************************************************************************************************/
-/// @brief A Clang Diagnostic Consumer that does nothing since we don't want clang to print out diag info.
+/// @brief A Clang Diagnostic Consumer that does nothing since we don't want
+/// clang to print out diag info.
 class BlankDiagConsumer : public clang::DiagnosticConsumer {
 public:
   BlankDiagConsumer() = default;
@@ -553,37 +662,61 @@ public:
 class MyASTConsumer : public ASTConsumer {
 public:
   MyASTConsumer(Rewriter &R)
-      : HandlerForVar(R), HandlerForClass(R),
-        HandlerForCalledFunc(R), HandlerForCXXMethod(R), HandlerForField(R), HandlerForStruct(R),
-        HandlerForUnion(R), HandlerForNamedDecl(R), HandlerForDeclRefExpr(R), HandlerForCallExpr(R),
-        HandlerForCXXCallExpr(R) {
+      : HandlerForVar(R), HandlerForClass(R), HandlerForCalledFunc(R),
+        HandlerForCXXMethod(R), HandlerForField(R), HandlerForStruct(R),
+        HandlerForUnion(R), HandlerForNamedDecl(R), HandlerForDeclRefExpr(R),
+        HandlerForCallExpr(R), HandlerForCXXCallExpr(R) {
 #if 1
     if (CO_FUNCTION || CO_ALL) {
-      Matcher.addMatcher(functionDecl().bind("funcdecl"), &HandlerForCalledFunc);}
+      Matcher.addMatcher(functionDecl().bind("funcdecl"),
+                         &HandlerForCalledFunc);
+    }
     if (CO_VAR || CO_ALL) {
-      Matcher.addMatcher(varDecl(anyOf(unless(hasDescendant(expr(anything()))), hasDescendant(expr(anything()).bind("expr")))).bind("vardecl"),&HandlerForVar);}
+      Matcher.addMatcher(
+          varDecl(anyOf(unless(hasDescendant(expr(anything()))),
+                        hasDescendant(expr(anything()).bind("expr"))))
+              .bind("vardecl"),
+          &HandlerForVar);
+    }
     if (CO_CLASS || CO_ALL) {
-      // we are excluding the definitions here, since class declarations and definitions
-      // will match separately, so for a class that is declared and defined in the same
-      // location, we'll get two matches. A declaration can happen without a definition
-      // but the other way around cannot be true.
-      Matcher.addMatcher(recordDecl(allOf(isClass(), unless(isDefinition()))).bind("classdecl"),&HandlerForClass);}
+      // we are excluding the definitions here, since class declarations and
+      // definitions will match separately, so for a class that is declared and
+      // defined in the same location, we'll get two matches. A declaration can
+      // happen without a definition but the other way around cannot be true.
+      Matcher.addMatcher(recordDecl(allOf(isClass(), unless(isDefinition())))
+                             .bind("classdecl"),
+                         &HandlerForClass);
+    }
     if (CO_MEM_FUNCTION || CO_ALL) {
-      Matcher.addMatcher(cxxMethodDecl().bind("cxxmethoddecl"), &HandlerForCXXMethod);}
+      Matcher.addMatcher(cxxMethodDecl().bind("cxxmethoddecl"),
+                         &HandlerForCXXMethod);
+    }
     if (CO_MEMVAR || CO_ALL) {
-      Matcher.addMatcher(fieldDecl().bind("fielddecl"), &HandlerForField);}
+      Matcher.addMatcher(fieldDecl().bind("fielddecl"), &HandlerForField);
+    }
     if (CO_STRUCT || CO_ALL) {
-      Matcher.addMatcher(recordDecl(allOf(isStruct(), unless(isDefinition()))).bind("structdecl"), &HandlerForStruct);}
+      Matcher.addMatcher(recordDecl(allOf(isStruct(), unless(isDefinition())))
+                             .bind("structdecl"),
+                         &HandlerForStruct);
+    }
     if (CO_UNION || CO_ALL) {
-      Matcher.addMatcher(recordDecl(isUnion()).bind("uniondecl"), &HandlerForUnion);}
+      Matcher.addMatcher(recordDecl(isUnion()).bind("uniondecl"),
+                         &HandlerForUnion);
+    }
     if (CO_NAMEDDECL) {
-      Matcher.addMatcher(namedDecl().bind("namedecl"), &HandlerForNamedDecl);}
+      Matcher.addMatcher(namedDecl().bind("namedecl"), &HandlerForNamedDecl);
+    }
     if (CO_DECLREFEXPR || CO_ALL) {
-     Matcher.addMatcher(declRefExpr().bind("declrefexpr"), &HandlerForDeclRefExpr);}
+      Matcher.addMatcher(declRefExpr().bind("declrefexpr"),
+                         &HandlerForDeclRefExpr);
+    }
     if (CO_CALL || CO_ALL) {
-      Matcher.addMatcher(callExpr().bind("callexpr"), &HandlerForCallExpr);}
+      Matcher.addMatcher(callExpr().bind("callexpr"), &HandlerForCallExpr);
+    }
     if (CO_CXXCALL || CO_ALL) {
-      Matcher.addMatcher(cxxMemberCallExpr().bind("cxxcallexpr"), &HandlerForCXXCallExpr);}
+      Matcher.addMatcher(cxxMemberCallExpr().bind("cxxcallexpr"),
+                         &HandlerForCXXCallExpr);
+    }
 #endif
   }
 
@@ -613,7 +746,7 @@ public:
 
   void EndSourceFileAction() override {
     std::error_code EC;
-    //TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
+    // TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
   }
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI,
@@ -635,7 +768,8 @@ private:
 /*Main*/
 int main(int argc, const char **argv) {
   CommonOptionsParser op(argc, argv, CGrepCat);
-  const std::vector<std::string> &SourcePathList [[maybe_unused]] = op.getSourcePathList();
+  const std::vector<std::string> &SourcePathList [[maybe_unused]] =
+      op.getSourcePathList();
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
   int ret = Tool.run(newFrontendActionFactory<AppFrontendAction>().get());
   return ret;

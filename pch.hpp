@@ -1,11 +1,3 @@
-#include <cassert>
-#include <cstdlib>
-#include <dirent.h>
-#include <fstream>
-#include <iostream>
-#include <regex>
-#include <string>
-#include <vector>
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
@@ -18,3 +10,11 @@
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Support/raw_ostream.h"
+#include <cassert>
+#include <cstdlib>
+#include <dirent.h>
+#include <fstream>
+#include <iostream>
+#include <regex>
+#include <string>
+#include <vector>

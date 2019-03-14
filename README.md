@@ -14,6 +14,7 @@ git submodule init
 git submodule update
 make
 ```
+`cgrep` supports LLVM 6,8, and for 9 the latest tested trunk version currently is:355787.<br/>
 The makefile assumes clang is called `clang` and llvm-config is called `llvm-config`. On some distros, the names might not be the same. In those cases use `CXX` and `LLVM_CONF` to pass the values to the makefile.<br/>
 
 ## Usage
