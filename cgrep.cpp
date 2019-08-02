@@ -78,7 +78,7 @@ cl::opt<bool> CO_SYSHDR("syshdr",
                         cl::init(false), cl::cat(CGrepCat),
                         cl::Optional); // done
 cl::opt<bool> CO_MAINFILE("mainfile",
-                          cl::desc("mathc identifiers in the main file only"),
+                          cl::desc("match identifiers in the main file only"),
                           cl::init(true), cl::cat(CGrepCat),
                           cl::Optional); // done
 cl::opt<int> CO_A(

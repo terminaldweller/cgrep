@@ -3,8 +3,8 @@
 
 # cgrep
 `grep` for C/C++ source files.<br/>
-cgrep uses libtooling, the latest tested version of LLVM is trunk 340121.<br/>
 Should be more or less fine for other C-family languages as well but I haven't tested for those since I don't use those. Let me know if you run into trouble using cgrep on those.<br/>
+The goal is to make the options and features as similar to `grep` as possible for ease of use.<br/>
 
 ## Bulding
 Assuming you have the llvm/clang libraries(the build file will read your llvm options using `llvm-config` so make sure it's in path), just run:<br/>
@@ -14,7 +14,7 @@ git submodule init
 git submodule update
 make
 ```
-`cgrep` supports LLVM 6,8, and for 9 the latest tested trunk version currently is:355787.<br/>
+`cgrep` supports LLVM 5,6,8,9. For 10. the latest tested trunk version is:367652. support for 5 and 6 might be dropped in the future.<br/>
 The makefile assumes clang is called `clang` and llvm-config is called `llvm-config`. On some distros, the names might not be the same. In those cases use `CXX` and `LLVM_CONF` to pass the values to the makefile.<br/>
 
 ## Usage
@@ -55,3 +55,7 @@ For an up-to-date list, you can run `crep --help`.<br/>
   -var                       - match variables only
 ```
 `cgrep` is a clang tool, so it will accecpt all valid clang commandline options.<br/>
+
+## Known Issues
+* bulding cgrep with `-j` will not work because shitty makefile.<br/>
+* the coloring is off right now and doesn't work properly.<br/>
