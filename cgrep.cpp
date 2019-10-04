@@ -196,6 +196,7 @@ std::vector<std::string> listDirs(std::string _path) {
       std::cout << "name: " << ent_->d_name << "\ttype:" << int(ent_->d_type)
                 << "\n";
       if (ent_->d_type == DT_DIR) {
+        std::cout << ent_->d_name << "\n";
       }
       dummy_.push_back(ent_->d_name);
     }
@@ -632,10 +633,12 @@ public:
       CheckSLValidity(HashLoc);
       SourceLocation SL =
           Devi::SourceLocationHasMacro(HashLoc, Rewrite, "start");
-      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, SM, SL))
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, SM, SL)) {
         return void();
-      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, SM, SL))
+      }
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, SM, SL)) {
         return void();
+      }
       std::string name = FileName.str();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         std::cout << name << "\t";

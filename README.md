@@ -7,7 +7,7 @@
 Should be more or less fine for other C-family languages as well but I haven't tested for those since I don't use those. Let me know if you run into trouble using cgrep on those.<br/>
 The goal is to make the options and features as similar to `grep` as possible for ease of use.<br/>
 
-## Bulding
+## Building
 Assuming you have the llvm/clang libraries(the build file will read your llvm options using `llvm-config` so make sure it's in path), just run:<br/>
 ```bash
 git clone https://github.com/bloodstalker/cgrep
@@ -15,8 +15,12 @@ git submodule init
 git submodule update
 make
 ```
-`cgrep` supports LLVM 5,6,8,9. For 10. the latest tested trunk version is:367652. support for 5 and 6 might be dropped in the future.<br/>
-The makefile assumes clang is called `clang` and llvm-config is called `llvm-config`. On some distros, the names might not be the same. In those cases use `CXX` and `LLVM_CONF` to pass the values to the makefile.<br/>
+If you have installed LLVM but don't have `llvm-config`, you are missing the dev package for LLVM.<br/>
+`cgrep` supports LLVM 5,6,8,9. For 10. the latest tested trunk version is:367652.<br/>
+The makefile assumes clang is called `clang` and llvm-config is called `llvm-config`. On some distros, the names might not be the same. In those cases use `CXX` and `LLVM_CONF` to pass the values to the makefile like so:<br/>
+```bash
+make CXX=clang-9.0 LLVM_CONF=llvm-config-9.0
+```
 
 ## Usage
 A simple usage example:<br/>
@@ -24,9 +28,10 @@ A simple usage example:<br/>
 cgrep -A 1 -B 1 --func --var --regex n[aA]m ./cgrep.cpp
 ```
 Pleade do note that the regex will pass through both C++ and the regex engine, so if you would want to escape `\`, the regex you pass as the commandline arg would be `\\\\` instead of the normal `\\`.<br/>
-In order for cgrep to work, you need to have a compilation database, tools like cmake can generate one for you.<br/>
-If your build tool doesn't do that, you can just use [bear](https://github.com/rizsotto/Bear).<br/>
-You can also skip the compilation database alltogether passing cgrep `--` after the input file name.<br/>
+In order for cgrep to work, you need to have a compilation database, tools like `cmake` can generate one for you.<br/>
+If your build tool doesn't do that, you can just use [bear](https://github.com/rizsotto/Bear) or [scan-build](https://github.com/rizsotto/scan-build).<br/>
+You can also skip the compilation database alltogether passing cgrep `--` after the input file name which means you have chosen not to pass it anything.<br/>
+You can pass the options by hand since cgrep is a Clang instance so it recognizes every option clang has.<br/>
 
 ## Options
 Here's an option list though it might not be necessarily up-to-date.<br/>
@@ -58,7 +63,7 @@ For an up-to-date list, you can run `crep --help`.<br/>
 `cgrep` is a clang tool, so it will accecpt all valid clang commandline options.<br/>
 
 ## Known Issues
-* bulding cgrep with `-j` will not work because shitty makefile.<br/>
+* bulding cgrep with `-j` will not work because bad makefile.<br/>
 * the coloring is off right now and doesn't work properly.<br/>
 =======
 
