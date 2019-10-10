@@ -21,7 +21,6 @@ The makefile assumes clang is called `clang` and llvm-config is called `llvm-con
 ```bash
 make CXX=clang-9.0 LLVM_CONF=llvm-config-9.0
 ```
-
 ## Usage
 A simple usage example:<br/>
 ```bash
@@ -33,32 +32,37 @@ If your build tool doesn't do that, you can just use [bear](https://github.com/r
 You can also skip the compilation database alltogether passing cgrep `--` after the input file name which means you have chosen not to pass it anything.<br/>
 You can pass the options by hand since cgrep is a Clang instance so it recognizes every option clang has.<br/>
 
+cgrep uses ANSI escape sequences for colors so your terminal should support those.<br/>
+
 ## Options
 Here's an option list though it might not be necessarily up-to-date.<br/>
 For an up-to-date list, you can run `crep --help`.<br/>
 
 ```bash
-  -A=<int>                   - same as grep, how many lines after the matched line to print
-  -B=<int>                   - same as grep, howm many lines before the matched line to print
-  -all                       - turns on all switches other than nameddecl
-  -awk                       - outputs location in a gawk freidnly format
-  -call                      - match function calls only
-  -class                     - match class declrations only
-  -cxxcall                   - match member function calls only
-  -declrefexpr               - matches declrefexpr
-  -dir=<string>              - recursively goes through all the files and directories. assumes compilation databases are present for all source files.
-  -func                      - match functions only
-  -header                    - match headers in header inclusions
-  -macro                     - match macro definitions
-  -mainfile                  - mathc identifiers in the main file only
-  -memfunc                   - match member functions only
-  -memvar                    - match member variables only
-  -nameddecl                 - matches all named declrations
-  -regex=<string>            - the regex to match against
-  -struct                    - match structures only
-  -syshdr                    - match identifiers in system header as well
-  -union                     - match unions only
-  -var                       - match variables only
+  -A=<int>                    - same as grep, how many lines after the matched line to print
+  -B=<int>                    - same as grep, howm many lines before the matched line to print
+  --all                       - turns on all switches other than nameddecl
+  --awk                       - outputs location in a gawk freidnly format
+  --call                      - match function calls only
+  --class                     - match class declrations only
+  --cxxcall                   - match member function calls only
+  --declrefexpr               - matches declrefexpr
+  --dir=<string>              - recursively goes through all the files and directories. assumes compilation databases are present for all source files.
+  --extra-arg=<string>        - Additional argument to append to the compiler command line
+  --extra-arg-before=<string> - Additional argument to prepend to the compiler command line
+  --func                      - match functions only
+  --header                    - match headers in header inclusions
+  --macro                     - match macro definitions
+  --mainfile                  - match identifiers in the main file only
+  --memfunc                   - match member functions only
+  --memvar                    - match member variables only
+  --nameddecl                 - matches all named declrations
+  -p=<string>                 - Build path
+  --regex=<string>            - the regex to match against
+  --struct                    - match structures only
+  --syshdr                    - match identifiers in system header as well
+  --union                     - match unions only
+  --var                       - match variables only
 ```
 `cgrep` is a clang tool, so it will accecpt all valid clang commandline options.<br/>
 
