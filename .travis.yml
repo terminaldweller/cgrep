@@ -1,7 +1,9 @@
 
 matrix:
+  fast_finish: true
   include:
     - dist: trusty
+      name: llvm5
       sudo: required
       language: cpp
       before_script: 
@@ -21,6 +23,7 @@ matrix:
       after_success:
         bash run.sh
     - dist: trusty
+      name: llvm6
       sudo: required
       language: cpp
       before_script: 
@@ -37,6 +40,7 @@ matrix:
       after_success:
         ./run.sh
     - dist: bionic
+      name: llvm8
       sudo: required
       language: cpp
       before_script: 
@@ -55,6 +59,7 @@ matrix:
         bash run.sh
   allow_failures:
     - dist: bionic
+      name: llvm9
       sudo: required
       language: cpp
       before_script: 
