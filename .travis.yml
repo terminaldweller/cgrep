@@ -46,6 +46,7 @@ matrix:
       - wget https://apt.llvm.org/llvm.sh
       - chmod +x llvm.sh
       - sudo ./llvm.sh 8
+      - sudo apt-get install llvm-8.0-dev
       - git submodule init
       - git submodule update
       script: 
@@ -62,6 +63,7 @@ matrix:
       - wget https://apt.llvm.org/llvm.sh
       - chmod +x llvm.sh
       - sudo ./llvm.sh 8
+      - sudo apt-get install llvm-8.0-dev
       - git submodule init
       - git submodule update
       script: 
