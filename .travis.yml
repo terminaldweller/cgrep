@@ -19,7 +19,7 @@ matrix:
       script: 
         - make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0
       after_success:
-        ./run.sh
+        bash run.sh
     - dist: trusty
       sudo: required
       language: cpp
@@ -42,7 +42,7 @@ matrix:
       before_script: 
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
       - sudo apt-get update -y
-      - sudo apt-get install build-essential -y
+      - sudo apt-get install libstdc++6 -y
       - wget https://apt.llvm.org/llvm.sh
       - chmod +x llvm.sh
       - sudo ./llvm.sh 8
@@ -64,6 +64,14 @@ matrix:
       - sudo ./llvm.sh 9
       - git submodule init
       - git submodule update
+      script: 
+        - make
+      after_success:
+        bash run.sh
+    - dist: osx
+      language: cpp
+      before_install:
+        - brew install llvm
       script: 
         - make
       after_success:
