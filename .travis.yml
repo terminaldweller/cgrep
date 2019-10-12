@@ -64,9 +64,11 @@ matrix:
       - chmod +x llvm.sh
       - sudo ./llvm.sh 8
       - sudo apt-get install llvm-8-dev
+      - whereis llvm-config
+      - whereis llvm-config-8
       - git submodule init
       - git submodule update
       script: 
-        - make CXX=clang-8.0 LLVM_CONF=llvm-config-8.0
+        - make CXX=clang-8 LLVM_CONF=llvm-config-8
       after_success:
         bash run.sh
