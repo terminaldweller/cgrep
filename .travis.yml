@@ -46,7 +46,9 @@ matrix:
       - wget https://apt.llvm.org/llvm.sh
       - chmod +x llvm.sh
       - sudo ./llvm.sh 8
-      - sudo apt-get install llvm-8-dev
+      - sudo apt-get install llvm-8-dev -y
+      - whereis llvm-config
+      - whereis llvm-config-8
       - git submodule init
       - git submodule update
       script: 
@@ -63,7 +65,8 @@ matrix:
       - wget https://apt.llvm.org/llvm.sh
       - chmod +x llvm.sh
       - sudo ./llvm.sh 8
-      - sudo apt-get install llvm-8-dev
+      - sudo apt-get install llvm-8-dev -y
+      - sudo apt-get install libclang-common-8-dev libclang-8-dev -y
       - whereis llvm-config
       - whereis llvm-config-8
       - git submodule init
