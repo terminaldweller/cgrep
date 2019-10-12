@@ -36,25 +36,6 @@ matrix:
         - make CXX=clang-6.0 LLVM_CONF=llvm-config-6.0
       after_success:
         ./run.sh
-    - dist: xenial
-      sudo: required
-      language: cpp
-      before_script: 
-      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-      - sudo apt-get update -y
-      - sudo apt-get install libstdc++-6-dev -y
-      - wget https://apt.llvm.org/llvm.sh
-      - chmod +x llvm.sh
-      - sudo ./llvm.sh 8
-      - sudo apt-get install llvm-8-dev libclang-common-8-dev libclang-8-dev -y
-      - whereis llvm-config
-      - whereis llvm-config-8
-      - git submodule init
-      - git submodule update
-      script: 
-        - make CXX=clang-8 LLVM_CONF=llvm-config-8
-      after_success:
-        bash run.sh
     - dist: bionic
       sudo: required
       language: cpp
