@@ -52,16 +52,16 @@ matrix:
         - make
       after_success:
         bash run.sh
-    - dist: xenial
+    - dist: bionic
       sudo: required
       language: cpp
       before_script: 
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
       - sudo apt-get update -y
-      - sudo apt-get install build-essential -y
+      - sudo apt-get install libstdc++7 -y
       - wget https://apt.llvm.org/llvm.sh
       - chmod +x llvm.sh
-      - sudo ./llvm.sh 9
+      - sudo ./llvm.sh 8
       - git submodule init
       - git submodule update
       script: 
