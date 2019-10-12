@@ -11,6 +11,7 @@ The goal is to make the options and features as similar to `grep` as possible fo
 Assuming you have the llvm/clang libraries(the build file will read your llvm options using `llvm-config` so make sure it's in path), just run:<br/>
 ```bash
 git clone https://github.com/bloodstalker/cgrep
+cd cgrep
 git submodule init
 git submodule update
 make
