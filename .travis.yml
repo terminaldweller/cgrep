@@ -11,7 +11,7 @@ matrix:
       - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
       - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main" | sudo tee -a /etc/apt/sources.list
       - sudo apt-get update -qq
-      - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime libclang1-5.0-dbg libllvm5.0-dbg lldb-5.0 -y
+      - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime -y
       - sudo apt-get install gcc-4.9 g++-4.9
       - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
       - git submodule init
@@ -25,7 +25,7 @@ matrix:
       - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
       - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main" | sudo tee -a /etc/apt/sources.list
       - sudo apt-get update -qq
-      - travis_retry sudo apt-get install clang-6.0 libclang-6.0-dev libclang-common-6.0-dev libllvm6.0 llvm-6.0-dev llvm-6.0 llvm-6.0-runtime libclang1-6.0-dbg libllvm6.0-dbg lldb-6.0 -y
+      - travis_retry sudo apt-get install clang-6.0 libclang-6.0-dev libclang-common-6.0-dev libllvm6.0 llvm-6.0-dev llvm-6.0 llvm-6.0-runtime -y
       - sudo apt-get install gcc-4.9 g++-4.9
       - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
       - git submodule init
@@ -33,15 +33,16 @@ matrix:
       script: 
         - make CXX=clang-6.0 LLVM_CONF=llvm-config-6.0
     - before_script: 
+      distro: xenial
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
       - sudo add-apt-repository ppa:fkrull/deadsnakes -y
       - sudo apt-get update -y
       - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
-      - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-8.0 main" | sudo tee -a /etc/apt/sources.list
+      - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-xenial-8.0 main" | sudo tee -a /etc/apt/sources.list
       - sudo apt-get update -qq
-      - travis_retry sudo apt-get install clang-8.0 libclang-8.0-dev libclang-common-8.0-dev libllvm8.0 llvm-8.0-dev llvm-8.0 llvm-8.0-runtime libclang1-8.0-dbg libllvm8.0-dbg lldb-8.0 -y
-      - sudo apt-get install gcc-4.9 g++-4.9
-      - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+      - travis_retry sudo apt-get install clang-8.0 libclang-8.0-dev libclang-common-8.0-dev libllvm8.0 llvm-8.0-dev llvm-8.0 llvm-8.0-runtime -y
+        #- sudo apt-get install gcc-4.9 g++-4.9
+        #- sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
       - git submodule init
       - git submodule update
       script: 
