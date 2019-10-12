@@ -32,16 +32,3 @@ matrix:
       - git submodule update
       script: 
         - make CXX=clang-6.0 LLVM_CONF=llvm-config-6.0
-    - before_script: 
-      dist: xenial
-      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-      - sudo add-apt-repository ppa:fkrull/deadsnakes -y
-      - sudo apt-get update -y
-      - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
-      - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-xenial-8.0 main" | sudo tee -a /etc/apt/sources.list
-      - sudo apt-get update -qq
-      - travis_retry sudo apt-get install clang-8.0 libclang-8.0-dev libclang-common-8.0-dev libllvm8.0 llvm-8.0-dev llvm-8.0 llvm-8.0-runtime -y
-      - git submodule init
-      - git submodule update
-      script: 
-        - make CXX=clang-8.0 LLVM_CONF=llvm-config-8.0
