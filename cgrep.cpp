@@ -146,10 +146,7 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
   auto columnnumber_start =
       MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
   auto columnnumber_end =
-      MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1 -
-      columnnumber_start;
-  // std::cout << MAGENTA << columnnumber_start << ":" << columnnumber_end <<
-  // NORMAL << "\n";
+      MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1;
   std::cout << MAGENTA << SR.getBegin().printToString(SM) << ":"
             << SR.getEnd().printToString(SM) << NORMAL << "\n";
   unsigned line_range_begin = linenumber - CO_B;
@@ -225,39 +222,10 @@ public:
         return void();
       std::string name = FD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::ifstream mainfile;
-        mainfile.open(MR.SourceManager->getFilename(SL).str());
-        auto linenumber = MR.SourceManager->getSpellingLineNumber(SL);
-        auto columnnumber_start =
-            MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
-        auto columnnumber_end =
-            columnnumber_start + DNI.getAsString().length() - 1;
-        unsigned line_range_begin = linenumber - CO_B;
-        unsigned line_range_end = linenumber + CO_A;
-        std::string line;
-        unsigned line_nu = 0;
-        while (getline(mainfile, line)) {
-          line_nu++;
-          if (line_nu >= line_range_begin && line_nu <= line_range_end) {
-            if (line_nu == linenumber) {
-              std::cout << RED << MR.SourceManager->getFilename(SL).str() << ":"
-                        << linenumber << ":" << columnnumber_start << ":"
-                        << NORMAL;
-              for (unsigned i = 1; i < line.length(); ++i) {
-                if (i >= columnnumber_start && i <= columnnumber_end) {
-                  std::cout << RED << line[i] << NORMAL;
-                } else {
-                  std::cout << line[i];
-                }
-              }
-              std::cout << GREEN << "\t<---defined here" << NORMAL << "\n";
-            } else {
-              std::cout << line << "\n";
-            }
-          }
-        }
-        std::cout << "\n";
-        mainfile.close();
+        auto StartLocation = FD->getLocation();
+        auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+        auto Range = SourceRange(StartLocation, EndLocation);
+        output_handler(MR, Range, *MR.SourceManager, true);
       }
     }
   }
@@ -271,11 +239,11 @@ public:
   FieldHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
-    const FieldDecl *VD = MR.Nodes.getNodeAs<clang::FieldDecl>("fielddecl");
-    if (VD) {
+    const FieldDecl *FD = MR.Nodes.getNodeAs<clang::FieldDecl>("fielddecl");
+    if (FD) {
       // IdentifierInfo* ID = VD->getIdentifier();
       // SourceRange SR = VD->getSourceRange();
-      SourceRange SR = VD->getSourceRange();
+      SourceRange SR = FD->getSourceRange();
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
@@ -283,16 +251,18 @@ public:
         return void();
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
         return void();
-      std::string name = VD->getNameAsString();
+      std::string name = FD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        auto StartLocation = FD->getLocation();
+        auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+        auto Range = SourceRange(StartLocation, EndLocation);
+        output_handler(MR, Range, *MR.SourceManager, true);
         std::cout
             << YELLOW
-            << MR.SourceManager->getSpellingColumnNumber(VD->getLocation())
+            << MR.SourceManager->getSpellingColumnNumber(FD->getLocation())
             << ":"
-            << MR.SourceManager->getSpellingColumnNumber(VD->DEVI_GETLOCEND())
+            << MR.SourceManager->getSpellingColumnNumber(FD->DEVI_GETLOCEND())
             << NORMAL << "\n";
-        // std::cout << BLUE << ID->getLength() << NORMAL << "\n";
-        output_handler(MR, SR, *MR.SourceManager, true);
       }
     }
   }
@@ -378,7 +348,10 @@ public:
         return void();
       std::string name = VD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        output_handler(MR, SR, *MR.SourceManager, true);
+        auto StartLocation = VD->getLocation();
+        auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+        auto Range = SourceRange(StartLocation, EndLocation);
+        output_handler(MR, Range, *MR.SourceManager, true);
       }
     }
   }
@@ -404,9 +377,10 @@ public:
         return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        output_handler(
-            MR, SourceRange(RD->DEVI_GETLOCSTART(), RD->DEVI_GETLOCEND()),
-            *MR.SourceManager, true);
+        auto StartLocation = RD->getLocation();
+        auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+        auto Range = SourceRange(StartLocation, EndLocation);
+        output_handler(MR, Range, *MR.SourceManager, true);
       }
     }
   }
@@ -484,7 +458,10 @@ public:
         return void();
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        output_handler(MR, SR, *MR.SourceManager, true);
+        auto StartLocation = ND->getLocation();
+        auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+        auto Range = SourceRange(StartLocation, EndLocation);
+        output_handler(MR, Range, *MR.SourceManager, true);
       }
     }
   }
