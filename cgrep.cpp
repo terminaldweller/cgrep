@@ -752,7 +752,7 @@ public:
     return llvm::make_unique<MyASTConsumer>(TheRewriter);
 #endif
 #if __clang_major__ >= 10
-    return llvm::make_unique<MyASTConsumer>(TheRewriter);
+    return std::make_unique<MyASTConsumer>(TheRewriter);
 #endif
   }
 
