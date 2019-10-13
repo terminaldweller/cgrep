@@ -1,4 +1,3 @@
-
 matrix:
   fast_finish: true
   include:
@@ -57,7 +56,6 @@ matrix:
         - make CXX=clang-8 LLVM_CONF=llvm-config-8
       after_success:
         bash run.sh
-  allow_failures:
     - dist: bionic
       name: llvm9
       sudo: required
@@ -66,13 +64,31 @@ matrix:
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
       - sudo apt-get update -y
       - sudo apt-get install libstdc++-7-dev -y
-      - wget https://apt.llvm.org/llvm.sh
-      - chmod +x llvm.sh
-      - sudo ./llvm.sh 9
-      - sudo apt-get install llvm-9-dev libclang-common-9-dev libclang-9-dev -y
+      - sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+      - sudo add-apt-repository "deb http://apt.llvm.org/bionic/   llvm-toolchain-bionic-9  main"
+      - sudo apt-get update 
+      - sudo apt-get install clang-9 llvm-9-dev libclang-common-9-dev libclang-9-dev -y
       - git submodule init
       - git submodule update
       script: 
         - make CXX=clang-9 LLVM_CONF=llvm-config-9
+      after_success:
+        bash run.sh
+    - dist: bionic
+      name: llvm10
+      sudo: required
+      language: cpp
+      before_script: 
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update -y
+      - sudo apt-get install libstdc++-7-dev -y
+      - wget https://apt.llvm.org/llvm.sh
+      - chmod +x llvm.sh
+      - sudo ./llvm.sh 10
+      - sudo apt-get install llvm-10-dev libclang-common-10-dev libclang-10-dev -y
+      - git submodule init
+      - git submodule update
+      script: 
+        - make CXX=clang-10 LLVM_CONF=llvm-config-10
       after_success:
         bash run.sh

@@ -147,30 +147,36 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
       MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
   auto columnnumber_end =
       MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1;
-  std::cout << MAGENTA << SR.getBegin().printToString(SM) << ":"
-            << SR.getEnd().printToString(SM) << NORMAL << "\n";
-  unsigned line_range_begin = linenumber - CO_B;
-  unsigned line_range_end = linenumber + CO_A;
-  std::string line;
-  unsigned line_nu = 0;
-  while (getline(mainfile, line)) {
-    line_nu++;
-    if (line_nu >= line_range_begin && line_nu <= line_range_end) {
-      if (line_nu == linenumber) {
-        std::cout << RED << MR.SourceManager->getFilename(SR.getBegin()).str()
-                  << ":" << linenumber << ":" << columnnumber_start << ":"
-                  << NORMAL;
-        for (unsigned i = 0; i < line.length(); ++i) {
-          if (i >= columnnumber_start && i <= columnnumber_end) {
-            std::cout << RED << line[i] << NORMAL;
-          } else {
-            std::cout << line[i];
+  if (CO_AWK) {
+    std::cout << MAGENTA << SR.getBegin().printToString(SM) << ":"
+              << SR.getEnd().printToString(SM) << NORMAL << "\n";
+    std::cout << RED << MR.SourceManager->getFilename(SR.getBegin()).str()
+              << ":" << linenumber << ":" << columnnumber_start
+              << NORMAL;
+  } else {
+    unsigned line_range_begin = linenumber - CO_B;
+    unsigned line_range_end = linenumber + CO_A;
+    std::string line;
+    unsigned line_nu = 0;
+    while (getline(mainfile, line)) {
+      line_nu++;
+      if (line_nu >= line_range_begin && line_nu <= line_range_end) {
+        if (line_nu == linenumber) {
+          std::cout << RED << MR.SourceManager->getFilename(SR.getBegin()).str()
+                    << ":" << linenumber << ":" << columnnumber_start << ":"
+                    << NORMAL;
+          for (unsigned i = 0; i < line.length(); ++i) {
+            if (i >= columnnumber_start && i <= columnnumber_end) {
+              std::cout << RED << line[i] << NORMAL;
+            } else {
+              std::cout << line[i];
+            }
           }
+          if (isdecl)
+            std::cout << GREEN << "\t<---defined here" << NORMAL << "\n";
+        } else {
+          std::cout << line << "\n";
         }
-        if (isdecl)
-          std::cout << GREEN << "\t<---defined here" << NORMAL << "\n";
-      } else {
-        std::cout << line << "\n";
       }
     }
   }
@@ -184,23 +190,23 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
  * @param _path where the the base directory is.
  * @return Returns the list of all found dirs.
  */
-std::vector<std::string> listDirs(std::string _path) {
-  std::vector<std::string> dummy_;
-  DIR *dir_;
-  struct dirent *ent_;
-  if ((dir_ = opendir(_path.c_str())) != nullptr) {
-    while ((ent_ = readdir(dir_)) != nullptr) {
-      std::cout << "name: " << ent_->d_name << "\ttype:" << int(ent_->d_type)
+std::vector<std::string> listDirs(std::string path) {
+  std::vector<std::string> dummy;
+  DIR *dir;
+  struct dirent *ent;
+  if ((dir = opendir(path.c_str())) != nullptr) {
+    while ((ent = readdir(dir)) != nullptr) {
+      std::cout << "name: " << ent->d_name << "\ttype:" << int(ent->d_type)
                 << "\n";
-      if (ent_->d_type == DT_DIR) {
-        std::cout << ent_->d_name << "\n";
+      if (ent->d_type == DT_DIR) {
+        std::cout << ent->d_name << "\n";
       }
-      dummy_.push_back(ent_->d_name);
+      dummy.push_back(ent->d_name);
     }
   } else {
     perror("could not open directory.");
   }
-  return dummy_;
+  return dummy;
 }
 /*************************************************************************************************/
 class FunctionHandler : public MatchFinder::MatchCallback {
@@ -731,12 +737,23 @@ public:
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI,
                                                  StringRef file) override {
+#if __clang_major__ <= 9
     CI.getPreprocessor().addPPCallbacks(
         llvm::make_unique<PPInclusion>(&CI.getSourceManager(), &TheRewriter));
+#endif
+#if __clang_major__ >= 10
+    CI.getPreprocessor().addPPCallbacks(
+        std::make_unique<PPInclusion>(&CI.getSourceManager(), &TheRewriter));
+#endif
     DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
     DE.setClient(BDCProto, false);
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+#if __clang_major__ <= 9
     return llvm::make_unique<MyASTConsumer>(TheRewriter);
+#endif
+#if __clang_major__ >= 10
+    return llvm::make_unique<MyASTConsumer>(TheRewriter);
+#endif
   }
 
 private:
