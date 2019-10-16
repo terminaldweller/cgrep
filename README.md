@@ -17,7 +17,7 @@ git submodule update
 make
 ```
 If you have installed LLVM but don't have `llvm-config`, you are missing the dev package for LLVM.<br/>
-`cgrep` supports LLVM 5,6,8,9. For 10. the latest tested trunk version is:367652.<br/>
+`cgrep` supports LLVM 5,6,7,8 and 9. For 10. the latest tested trunk version is:374971.<br/>
 The makefile assumes clang is called `clang` and llvm-config is called `llvm-config`. On some distros, the names might not be the same. In those cases use `CXX` and `LLVM_CONF` to pass the values to the makefile like so:<br/>
 ```bash
 make CXX=clang-9.0 LLVM_CONF=llvm-config-9.0
