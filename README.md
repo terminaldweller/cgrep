@@ -1,6 +1,10 @@
 [![Build Status](https://travis-ci.org/bloodstalker/cgrep.svg?branch=master)](https://travis-ci.org/bloodstalker/cgrep)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/bloodstalker/cgrep.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bloodstalker/cgrep/context:cpp)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep?ref=badge_shield)
+<a href="https://scan.coverity.com/projects/bloodstalker-cgrep">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/19431/badge.svg"/>
+</a>
 
 # cgrep
 `grep` for C/C++ source files.<br/>
