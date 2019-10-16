@@ -101,7 +101,7 @@ cl::opt<int> CO_B(
 #if __clang_major__ <= 6
 #define DEVI_GETLOCSTART getLocStart
 #define DEVI_GETLOCEND getLocEnd
-#elif __clang_major__ >= 8
+#elif __clang_major__ >= 7
 #define DEVI_GETLOCSTART getBeginLoc
 #define DEVI_GETLOCEND getEndLoc
 #endif
@@ -598,7 +598,7 @@ public:
                                   const FileEntry *File, StringRef SearchPath,
                                   StringRef RelativePath,
                                   const clang::Module *Imported) {
-#elif __clang_major__ >= 8
+#elif __clang_major__ >= 7
   virtual void InclusionDirective(SourceLocation HashLoc,
                                   const Token &IncludeTok, StringRef FileName,
                                   bool IsAngled, CharSourceRange FilenameRange,
