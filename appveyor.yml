@@ -9,7 +9,7 @@ environment:
 
 install:
   #- '%CYG_ROOT%\%CYG_SETUP% -gnqINDo -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -l "%CYG_CACHE%" -P make,libclang-devel,libllvm-devel,clang > NULL 2>&1'
-  - '%CYG_ROOT%\%CYG_SETUP% -qI -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -P make,libclang-devel,libllvm-devel,clang,libiconv'
+  - '%CYG_ROOT%\%CYG_SETUP% -qI -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -P make,libclang-devel,libllvm-devel,clang,libiconv-devel'
   - '%CYG_ROOT%\bin\cygcheck -dc cygwin'
   - 'cd %APPVEYOR_BUILD_FOLDER%'
   - 'git submodule init'
