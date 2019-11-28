@@ -9,19 +9,18 @@ environment:
 
 install:
   #- '%CYG_ROOT%\%CYG_SETUP% -gnqINDo -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -l "%CYG_CACHE%" -P make,libclang-devel,libllvm-devel,clang > NULL 2>&1'
-  #- '%CYG_ROOT%\%CYG_SETUP% -gnqINDo -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -P make,libclang-devel,libllvm-devel,clang'
-  - '%CYG_ROOT%\%CYG_SETUP% -gnqINDo -s "%CYG_MIRROR%" -P make,libclang-devel,libllvm-devel,clang'
+  - '%CYG_ROOT%\%CYG_SETUP% -gnqINDo -R "%CYG_ROOT%"\bin -s "%CYG_MIRROR%" -P make,libclang-devel,libllvm-devel,clang'
   - '%CYG_ROOT%\bin\cygcheck -dc cygwin'
   - 'cd %APPVEYOR_BUILD_FOLDER%'
   - 'git submodule init'
   - 'git submodule update'
   - 'clang++ --version'
   #- 'llvm-config --cppflags'
-  - '%CYG_ROOT%\bin\bash -lc "whereis clang++"'
-  - '%CYG_ROOT%\bin\bash -lc "which clang++"'
-  - '%CYG_ROOT%\bin\bash -lc "cygcheck -f $(which clang++)"'
-  - '%CYG_ROOT%\bin\bash -lc "/usr/bin/clang --version"'
-  - '%CYG_ROOT%\bin\bash -lc "/usr/bin/llvm-config --cppflags"'
+  - '%CYG_BASH% -lc "whereis clang++"'
+  - '%CYG_BASH% -lc "which clang++"'
+  - '%CYG_BASH% -lc "cygcheck -f $(which clang++)"'
+  - '%CYG_BASH% -lc "/usr/bin/clang --version"'
+  - '%CYG_BASH% -lc "/usr/bin/llvm-config --cppflags"'
 
 build_script:
   - '%CYG_ROOT%\bin\bash -lc "make -C $APPVEYOR_BUILD_FOLDER"'
