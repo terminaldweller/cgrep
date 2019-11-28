@@ -1,7 +1,7 @@
 
 environment:
   global:
-    CYG_MIRROR: http://mirrors.kernel.org
+    CYG_MIRROR: http://mirrors.kernel.org/sourceware/cygwin
     CYG_ROOT: C:\cygwin64
     CYG_SETUP: setup-x86_64.exe
     CYG_CACHE: '%CYG_ROOT%\var\cache\setup'
