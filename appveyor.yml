@@ -1,0 +1,15 @@
+
+environment:
+  global:
+    CYG_MIRROR: http://mirrors.kernel.org
+    CYG_ROOT: C:\cygwin64
+    CYG_SETUP: setup-x86_64.exe
+    CYG_CACHE: '%CYG_ROOT%\var\cache\setup'
+    CYG_BASH: '%CYG_ROOT%\bin\bash'
+
+install:
+  - '%CYG_ROOT%\%CYG_SETUP% -gnqI  -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -l "%CYG_CACHE%" -P make,libclang-devel,libllvm-devel,clang > NULL 2>&1'
+  - '%CYG_ROOT%\bin\cygcheck -dc cygwin'
+
+build-script:
+  - make
