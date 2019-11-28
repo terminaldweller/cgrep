@@ -3,13 +3,21 @@ SHELL=bash
 SHELL?=bash
 CC=clang
 CC?=clang
-CFLAGS=-fpic -std=c11
+ifdef OS
+	CFLAGS=-std=c11
+else
+	CFLAGS=-fpic -std=c11
+endif
 CXX=clang++
 CXX?=clang++
-CXX_FLAGS=-fpic
+ifdef OS
+	CXX_FLAGS=
+else
+	CXX_FLAGS=-fpic
+endif
 CXX_EXTRA?=
 CTAGS_I_PATH?=./
-LD_FLAGS=
+LD_FLAGS= -lstdc++fs
 EXTRA_LD_FLAGS?=
 ADD_SANITIZERS_CC= -g -fsanitize=address -fno-omit-frame-pointer
 ADD_SANITIZERS_LD= -g -fsanitize=address
