@@ -15,7 +15,8 @@ install:
   - 'git submodule init'
   - 'git submodule update'
   - 'clang++ --version'
-  - 'llvm--config --cppflags'
+  - 'llvm-config --cppflags'
+  - '%CYG_ROOT%\bin\bash -lc "llvm-config --cppflags"'
 
 build_script:
   - '%CYG_ROOT%\bin\bash -lc "make -C $APPVEYOR_BUILD_FOLDER"'
