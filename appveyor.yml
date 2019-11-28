@@ -16,8 +16,9 @@ install:
   - 'git submodule update'
   - 'clang++ --version'
   #- 'llvm-config --cppflags'
-  - '%CYG_ROOT%\bin\bash -lc "llvm-config --cppflags"'
   - '%CYG_ROOT%\bin\bash -lc "whereis clang++"'
+  - '%CYG_ROOT%\bin\bash -lc "which clang++"'
+  - '%CYG_ROOT%\bin\bash -lc "llvm-config --cppflags"'
 
 build_script:
   - '%CYG_ROOT%\bin\bash -lc "make -C $APPVEYOR_BUILD_FOLDER"'
