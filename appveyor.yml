@@ -9,11 +9,13 @@ environment:
 
 install:
   #- '%CYG_ROOT%\%CYG_SETUP% -gnqINDo -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -l "%CYG_CACHE%" -P make,libclang-devel,libllvm-devel,clang > NULL 2>&1'
-  - '%CYG_ROOT%\%CYG_SETUP% -gnqINDo -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -l "%CYG_CACHE%" -P make,libclang-devel,libllvm-devel,clang,llvm,libllvm'
+  - '%CYG_ROOT%\%CYG_SETUP% -gnqINDo -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -l "%CYG_CACHE%" -P make,libclang-devel,libllvm-devel,clang'
   - '%CYG_ROOT%\bin\cygcheck -dc cygwin'
   - 'cd %APPVEYOR_BUILD_FOLDER%'
   - 'git submodule init'
   - 'git submodule update'
+  - 'clang++ --version'
+  - 'llvm--config --cppflags'
 
 build_script:
   - '%CYG_ROOT%\bin\bash -lc "make -C $APPVEYOR_BUILD_FOLDER"'
