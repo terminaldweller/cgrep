@@ -7,9 +7,13 @@ environment:
     CYG_CACHE: '%CYG_ROOT%\var\cache\setup'
     CYG_BASH: '%CYG_ROOT%\bin\bash'
 
+init:
+  - 'git submodule init'
+  - 'git submodule update'
+
 install:
   #- '%CYG_ROOT%\%CYG_SETUP% -gnqINDo -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -l "%CYG_CACHE%" -P make,libclang-devel,libllvm-devel,clang > NULL 2>&1'
-  - '%CYG_ROOT%\%CYG_SETUP% -gnqINDo -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -l "%CYG_CACHE%" -P make,libclang-devel,libllvm-devel,clang'
+  - '%CYG_ROOT%\%CYG_SETUP% -gnqINDo -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -l "%CYG_CACHE%" -P make,libclang-devel,libllvm-devel,clang,llvm'
   - '%CYG_ROOT%\bin\cygcheck -dc cygwin'
 
 build_script:
