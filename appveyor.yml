@@ -11,5 +11,5 @@ install:
   - '%CYG_ROOT%\%CYG_SETUP% -gnqINDo -R "%CYG_ROOT%" -s "%CYG_MIRROR%" -l "%CYG_CACHE%" -P make,libclang-devel,libllvm-devel,clang > NULL 2>&1'
   - '%CYG_ROOT%\bin\cygcheck -dc cygwin'
 
-build-script:
+build_script:
   - '%CYG_ROOT%\bin\bash make -C %APPVEYOR_BUILD_FORLDER%'
