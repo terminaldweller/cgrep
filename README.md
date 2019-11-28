@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/bloodstalker/cgrep.svg?branch=master)](https://travis-ci.org/bloodstalker/cgrep)
+[![Build status](https://ci.appveyor.com/api/projects/status/caab8oxmgljb87te?svg=true)](https://ci.appveyor.com/project/bloodstalker/cgrep)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/bloodstalker/cgrep.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bloodstalker/cgrep/context:cpp)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep?ref=badge_shield)
 <a href="https://scan.coverity.com/projects/bloodstalker-cgrep">
@@ -26,6 +27,8 @@ The makefile assumes clang is called `clang` and llvm-config is called `llvm-con
 ```bash
 make CXX=clang-9.0 LLVM_CONF=llvm-config-9.0
 ```
+For windows builds, cygwin builds are supported. get llvm and clang along with their sources and build like usual.<br/>
+
 ## Usage
 A simple usage example:<br/>
 ```bash
