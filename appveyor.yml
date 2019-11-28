@@ -19,6 +19,7 @@ install:
   - '%CYG_ROOT%\bin\bash -lc "whereis clang++"'
   - '%CYG_ROOT%\bin\bash -lc "which clang++"'
   - '%CYG_ROOT%\bin\bash -lc "cygcheck -f $(which clang++)"'
+  - '%CYG_ROOT%\bin\bash -lc "/usr/bin/clang --version"'
   - '%CYG_ROOT%\bin\bash -lc "/usr/bin/llvm-config --cppflags"'
 
 build_script:
