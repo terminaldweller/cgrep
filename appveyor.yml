@@ -13,4 +13,5 @@ install:
   - '%CYG_ROOT%\bin\cygcheck -dc cygwin'
 
 build_script:
-  - '%CYG_ROOT%\bin\bash make -C %APPVEYOR_BUILD_FORLDER%'
+  #- '%CYG_ROOT%\bin\bash make -C %APPVEYOR_BUILD_FORLDER%'
+  - 'make -C %APPVEYOR_BUILD_FORLDER%'
