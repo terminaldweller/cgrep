@@ -7,6 +7,7 @@
        src="https://scan.coverity.com/projects/19431/badge.svg"/>
 </a>
 [![Coverage Status](https://coveralls.io/repos/github/bloodstalker/cgrep/badge.svg?branch=master)](https://coveralls.io/github/bloodstalker/cgrep?branch=master)
+[![Gitter](https://badges.gitter.im/mutatortools/community.svg)](https://gitter.im/mutatortools/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # cgrep
 `grep` for C/C++ source files.<br/>
