@@ -124,6 +124,7 @@ cl::opt<int> CO_B(
  *
  * @param path
  */
+#if 0
 static void dig(std::string path) {
 	for (const auto &entry : std::filesystem::directory_iterator(path)) {
 		std::cout << entry.path() << "\n";
@@ -132,6 +133,7 @@ static void dig(std::string path) {
 		}
 	}
 }
+#endif
 
 /**
  * @brief does some preprocessing on the regex string we get as input
@@ -784,9 +786,11 @@ int main(int argc, const char **argv) {
       op.getSourcePathList();
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
   int ret = Tool.run(newFrontendActionFactory<AppFrontendAction>().get());
+#if 0
   if ("" != CO_RECURSIVE) {
     dig(CO_RECURSIVE);
   }
+#endif
   return ret;
 }
 /*************************************************************************************************/
