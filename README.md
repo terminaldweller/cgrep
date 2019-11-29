@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/bloodstalker/cgrep.svg?branch=master)](https://travis-ci.org/bloodstalker/cgrep)
 [![Build status](https://ci.appveyor.com/api/projects/status/caab8oxmgljb87te?svg=true)](https://ci.appveyor.com/project/bloodstalker/cgrep)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/bloodstalker/cgrep.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bloodstalker/cgrep/context:cpp)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e082e812fe6142a483da9724f180bb60)](https://www.codacy.com/manual/bloodstalker/mutator?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bloodstalker/mutator&amp;utm_campaign=Badge_Grade)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep?ref=badge_shield)
 <a href="https://scan.coverity.com/projects/bloodstalker-cgrep">
   <img alt="Coverity Scan Build Status"
