@@ -19,11 +19,11 @@ using namespace clang::tooling;
 /*************************************************************************************************/
 namespace {
 static llvm::cl::OptionCategory CGrepCat("cgrep options");
-cl::opt<std::string> CO_DIRECTORY(
+cl::opt<std::string> CO_RECURSIVE(
     "dir",
     cl::desc("recursively goes through all the files and directories. assumes "
-             "compilation databases are present for all source files."),
-    cl::init(""), cl::cat(CGrepCat), cl::Optional);
+             "compilation databases are present for all source files."), 
+    cl::init(""), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<std::string> CO_REGEX("regex", cl::desc("the regex to match against"),
                               cl::init(""), cl::cat(CGrepCat),
                               cl::Required); // done
@@ -120,6 +120,20 @@ cl::opt<int> CO_B(
 #define CLEAR "\033[2J"
 
 /**
+ * @brief recursively goes through all the directories starting from path
+ *
+ * @param path
+ */
+static void dig(std::string path) {
+	for (const auto &entry : std::filesystem::directory_iterator(path)) {
+		std::cout << entry.path() << "\n";
+		if (true == entry.is_directory()) {
+			dig(entry.path());
+		}
+	}
+}
+
+/**
  * @brief does some preprocessing on the regex string we get as input
  * @param rx_str
  * @return the preprocessed string
@@ -172,8 +186,9 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
               std::cout << line[i];
             }
           }
-          if (isdecl)
-            std::cout << GREEN << "\t<---defined here" << NORMAL << "\n";
+          if (isdecl) {
+            std::cout << GREEN << "\t<---declared here" << NORMAL << "\n";
+          }
         } else {
           std::cout << line << "\n";
         }
@@ -228,10 +243,12 @@ public:
         return void();
       std::string name = FD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*FD);
+        NamedDecl const * ND = DNode.get<NamedDecl>();
         auto StartLocation = FD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
-        output_handler(MR, Range, *MR.SourceManager, true);
+        output_handler(MR, Range, *MR.SourceManager, FD->isThisDeclarationADefinition());
       }
     }
   }
@@ -247,8 +264,6 @@ public:
   virtual void run(const MatchFinder::MatchResult &MR) {
     const FieldDecl *FD = MR.Nodes.getNodeAs<clang::FieldDecl>("fielddecl");
     if (FD) {
-      // IdentifierInfo* ID = VD->getIdentifier();
-      // SourceRange SR = VD->getSourceRange();
       SourceRange SR = FD->getSourceRange();
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
@@ -769,6 +784,9 @@ int main(int argc, const char **argv) {
       op.getSourcePathList();
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
   int ret = Tool.run(newFrontendActionFactory<AppFrontendAction>().get());
+  if ("" != CO_RECURSIVE) {
+    dig(CO_RECURSIVE);
+  }
   return ret;
 }
 /*************************************************************************************************/

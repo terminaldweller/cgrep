@@ -6,6 +6,7 @@
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/19431/badge.svg"/>
 </a>
+[![Coverage Status](https://coveralls.io/repos/github/bloodstalker/cgrep/badge.svg?branch=master)](https://coveralls.io/github/bloodstalker/cgrep?branch=master)
 
 # cgrep
 `grep` for C/C++ source files.<br/>
