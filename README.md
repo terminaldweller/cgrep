@@ -3,20 +3,20 @@
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/bloodstalker/cgrep.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bloodstalker/cgrep/context:cpp)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/726c70d0e3294f149036fa6134998fe8)](https://www.codacy.com/manual/bloodstalker/cgrep?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bloodstalker/cgrep&amp;utm_campaign=Badge_Grade)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep?ref=badge_shield)
-<a href="https://scan.coverity.com/projects/bloodstalker-cgrep">
-  <img alt="Coverity Scan Build Status"
-       src="https://scan.coverity.com/projects/19431/badge.svg"/>
-</a>
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/19431/badge.svg)](https://scan.coverity.com/projects/bloodstalker-cgrep)
 [![Coverage Status](https://coveralls.io/repos/github/bloodstalker/cgrep/badge.svg?branch=master)](https://coveralls.io/github/bloodstalker/cgrep?branch=master)
 [![Gitter](https://badges.gitter.im/mutatortools/community.svg)](https://gitter.im/mutatortools/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # cgrep
-`grep` for C/C++ source files.<br/>
-Should be more or less fine for other C-family languages as well but I haven't tested for those since I don't use those. Let me know if you run into trouble using cgrep on those.<br/>
-The goal is to make the options and features as similar to `grep` as possible for ease of use.<br/>
+
+`grep` for C/C++ source files.
+Should be more or less fine for other C-family languages as well but I haven't tested for those since I don't use those. Let me know if you run into trouble using cgrep on those.
+The goal is to make the options and features as similar to `grep` as possible for ease of use.
 
 ## Building
-Assuming you have the llvm/clang libraries (the build file will read your llvm options using `llvm-config` so make sure it's in path), just run:<br/>
+
+Assuming you have the llvm/clang libraries (the build file will read your llvm options using `llvm-config` so make sure it's in path), just run:
+
 ```bash
 git clone https://github.com/bloodstalker/cgrep
 cd cgrep
@@ -24,30 +24,37 @@ git submodule init
 git submodule update
 make
 ```
-If you have installed LLVM but don't have `llvm-config`, you are missing the dev package for LLVM.<br/>
-`cgrep` supports LLVM 5,6,7,8 and 9. For 10 the latest tested trunk version is: 374971.<br/>
-The makefile assumes clang is called `clang` and llvm-config is called `llvm-config`. On some distros, the names might not be the same. In those cases use `CXX` and `LLVM_CONF` to pass the values to the makefile like so:<br/>
+
+If you have installed LLVM but don't have `llvm-config`, you are missing the dev package for LLVM.
+`cgrep` supports LLVM 5,6,7,8 and 9. For 10 the latest tested trunk version is: 374971.
+The makefile assumes clang is called `clang` and llvm-config is called `llvm-config`. On some distros, the names might not be the same. In those cases use `CXX` and `LLVM_CONF` to pass the values to the makefile like so:
+
 ```bash
 make CXX=clang-9.0 LLVM_CONF=llvm-config-9.0
 ```
-For windows builds, cygwin builds are supported. Get llvm and clang along with their sources and build like usual.<br/>
+
+For windows builds, cygwin builds are supported. Get llvm and clang along with their sources and build like usual.
 
 ## Usage
-A simple usage example:<br/>
+
+A simple usage example:
+
 ```bash
 cgrep -A 1 -B 1 --func --var --regex n[aA]m ./cgrep.cpp
 ```
-Please do note that the regex will pass through both C++ and the regex engine, so if you would want to escape `\`, the regex you pass as the command line arg would be `\\\\` instead of the normal `\\`.<br/>
-In order for cgrep to work, you need to have a compilation database, tools like `cmake` can generate one for you.<br/>
-If your build tool doesn't do that, you can just use [bear](https://github.com/rizsotto/Bear) or [scan-build](https://github.com/rizsotto/scan-build).<br/>
-You can also skip the compilation database altogether passing cgrep `--` after the input file name which means you have chosen not to pass it anything.<br/>
-You can pass the options by hand since cgrep is a Clang instance so it recognizes every option clang has.<br/>
 
-cgrep uses ANSI escape sequences for colors so your terminal should support those.<br/>
+Please do note that the regex will pass through both C++ and the regex engine, so if you would want to escape `\`, the regex you pass as the command line arg would be `\\\\` instead of the normal `\\`.
+In order for cgrep to work, you need to have a compilation database, tools like `cmake` can generate one for you.
+If your build tool doesn't do that, you can just use [bear](https://github.com/rizsotto/Bear) or [scan-build](https://github.com/rizsotto/scan-build).
+You can also skip the compilation database altogether passing cgrep `--` after the input file name which means you have chosen not to pass it anything.
+You can pass the options by hand since cgrep is a Clang instance so it recognizes every option clang has.
+
+cgrep uses ANSI escape sequences for colors so your terminal should support those.
 
 ## Options
-Here's an option list, though it might not be necessarily up-to-date.<br/>
-For an up-to-date list, you can run `cgrep --help`.<br/>
+
+Here's an option list, though it might not be necessarily up-to-date.
+For an up-to-date list, you can run `cgrep --help`.
 
 ```bash
   -A=<int>                    - same as grep, how many lines after the matched line to print
@@ -75,13 +82,14 @@ For an up-to-date list, you can run `cgrep --help`.<br/>
   --union                     - match unions only
   --var                       - match variables only
 ```
-`cgrep` is a clang tool, so it will accept all valid clang command line options.<br/>
+
+`cgrep` is a clang tool, so it will accept all valid clang command line options.
 
 ## Known Issues
-* building cgrep with `-j` will not work because bad makefile.<br/>
-* the coloring is off right now and doesn't work properly.<br/>
-=======
+
+* building cgrep with `-j` will not work because bad makefile.
+* the coloring is off right now and doesn't work properly.
 
 ## License
+
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep?ref=badge_large)
-=======
