@@ -153,15 +153,19 @@ static std::string get_line_from_file(SourceManager &SM, const MatchFinder::Matc
  *
  * @param path
  */
+#if 0
 static void dig(boost::filesystem::path dir, int argc, const char** argv) {
-  for (const auto &entry : boost::filesystem::directory_iterator(dir)) {
-    if (true == is_directory(entry)) {
+  //just to be compatible with old gcc versions
+  //for (const auto &entry : boost::filesystem::directory_iterator(dir)) {
+  for (boost::filesystem::path::iterator entry = dir.begin(); entry != dir.end(); ++entry ) {
+    if (true == is_directory(*entry)) {
       auto cgrepInstance = build_cgrep_instance(argc, argv);
       run_cgrep_instance(cgrepInstance);
-      dig(entry.path(), argc, argv);
+      dig((*entry).path(), argc, argv);
     }
   }
 }
+#endif
 
 /**
  * @brief does some preprocessing on the regex string we get as input
