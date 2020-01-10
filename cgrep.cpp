@@ -1,28 +1,29 @@
 
 /*first line intentionally left blank.*/
-/*************************************************************************************************/
+/***********************************************************************************************/
 //-*-c++-*-
 /*Copyright (C) 2018 Farzad Sadeghi
  * Licensed under GPL-3.0
  * */
-/*************************************************************************************************/
+/***********************************************************************************************/
 /*included modules*/
 #include "./cfe-extra/cfe_extra.h"
 #include "./pch.hpp"
-/*************************************************************************************************/
+/***********************************************************************************************/
 /*used namespaces*/
 using namespace llvm;
 using namespace clang;
 using namespace clang::ast_matchers;
 using namespace clang::driver;
 using namespace clang::tooling;
-/*************************************************************************************************/
+using namespace boost::filesystem;
+/***********************************************************************************************/
 namespace {
 static llvm::cl::OptionCategory CGrepCat("cgrep options");
 cl::opt<std::string> CO_RECURSIVE(
     "dir",
     cl::desc("recursively goes through all the files and directories. assumes "
-             "compilation databases are present for all source files."), 
+             "compilation databases are present for all source files."),
     cl::init(""), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<std::string> CO_REGEX("regex", cl::desc("the regex to match against"),
                               cl::init(""), cl::cat(CGrepCat),
@@ -90,7 +91,7 @@ cl::opt<int> CO_B(
     cl::desc("same as grep, howm many lines before the matched line to print"),
     cl::init(0), cl::cat(CGrepCat), cl::Optional); // done
 } // namespace
-/*************************************************************************************************/
+/***********************************************************************************************/
 #if 1
 #define REGEX_PP(RX_STR) RX_STR
 #endif
@@ -118,22 +119,49 @@ cl::opt<int> CO_B(
 #define YELLOW "\033[1;33m"
 #define NORMAL "\033[0m"
 #define CLEAR "\033[2J"
+/***********************************************************************************************/
+//forwartd declarations
+static ClangTool build_cgrep_instance(int argc,  const char** argv);
+static int run_cgrep_instance(ClangTool cgrepToolInstance);
+/***********************************************************************************************/
+static std::string get_line_from_file(SourceManager &SM, const MatchFinder::MatchResult & MR, SourceRange SR) {
+  std::string Result = "";
+
+  std::ifstream mainfile;
+  std::string mainfile_str = MR.SourceManager->getFilename(SR.getBegin()).str();
+  mainfile.open(mainfile_str);
+  auto linenumber = MR.SourceManager->getSpellingLineNumber(SR.getBegin());
+  auto columnnumber_start = MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
+  auto columnnumber_end = MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1;
+
+  std::string line;
+  unsigned line_nu = 0;
+
+  while (getline(mainfile, line)) {
+    line_nu++;
+    if (line_nu == linenumber) {
+      Result = line;
+      std::cout << GREEN << "\n" << mainfile_str << ":" <<  linenumber << ":" << line << "\t <---declared here" << NORMAL << "\n";
+    }
+  }
+
+  return Result;
+}
 
 /**
  * @brief recursively goes through all the directories starting from path
  *
  * @param path
  */
-#if 0
-static void dig(std::string path) {
-	for (const auto &entry : std::filesystem::directory_iterator(path)) {
-		std::cout << entry.path() << "\n";
-		if (true == entry.is_directory()) {
-			dig(entry.path());
-		}
-	}
+static void dig(boost::filesystem::path dir, int argc, const char** argv) {
+  for (const auto &entry : boost::filesystem::directory_iterator(dir)) {
+    if (true == is_directory(entry)) {
+      auto cgrepInstance = build_cgrep_instance(argc, argv);
+      run_cgrep_instance(cgrepInstance);
+      dig(entry.path(), argc, argv);
+    }
+  }
 }
-#endif
 
 /**
  * @brief does some preprocessing on the regex string we get as input
@@ -201,6 +229,57 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
   mainfile.close();
 }
 
+void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
+                    SourceManager &SM, bool isdecl, ast_type_traits::DynTypedNode &DTN) {
+  std::ifstream mainfile;
+  mainfile.open(MR.SourceManager->getFilename(SR.getBegin()).str());
+  auto linenumber = MR.SourceManager->getSpellingLineNumber(SR.getBegin());
+  auto columnnumber_start =
+      MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
+  auto columnnumber_end =
+      MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1;
+  if (CO_AWK) {
+    std::cout << MAGENTA << SR.getBegin().printToString(SM) << ":"
+              << SR.getEnd().printToString(SM) << NORMAL << "\n";
+    std::cout << RED << MR.SourceManager->getFilename(SR.getBegin()).str()
+              << ":" << linenumber << ":" << columnnumber_start
+              << NORMAL;
+  } else {
+    unsigned line_range_begin = linenumber - CO_B;
+    unsigned line_range_end = linenumber + CO_A;
+    std::string line;
+    unsigned line_nu = 0;
+    while (getline(mainfile, line)) {
+      line_nu++;
+      if (line_nu >= line_range_begin && line_nu <= line_range_end) {
+        if (line_nu == linenumber) {
+          std::cout << RED << MR.SourceManager->getFilename(SR.getBegin()).str()
+                    << ":" << linenumber << ":" << columnnumber_start << ":"
+                    << NORMAL;
+          for (unsigned i = 0; i < line.length(); ++i) {
+            if (i >= columnnumber_start && i <= columnnumber_end) {
+              std::cout << RED << line[i] << NORMAL;
+            } else {
+              std::cout << line[i];
+            }
+          }
+          if (isdecl) {
+            std::cout << GREEN << "\t<---declared here" << NORMAL;
+          } else {
+            const NamedDecl * ND = DTN.get<NamedDecl>();
+            if (nullptr != ND) {
+              SourceRange ND_SR = ND->getSourceRange();
+              get_line_from_file(SM, MR, ND_SR);
+            }
+          }
+        } else {
+        }
+      }
+    }
+  }
+  std::cout << "\n";
+  mainfile.close();
+}
 /**
  * @brief Gets the list of all directories and sub-directories starting from a
  * base directory.
@@ -225,7 +304,7 @@ std::vector<std::string> listDirs(std::string path) {
   }
   return dummy;
 }
-/*************************************************************************************************/
+/***********************************************************************************************/
 class FunctionHandler : public MatchFinder::MatchCallback {
 public:
   FunctionHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -258,7 +337,7 @@ public:
 private:
   Rewriter &Rewrite [[maybe_unused]];
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 class FieldHandler : public MatchFinder::MatchCallback {
 public:
   FieldHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -280,12 +359,6 @@ public:
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
         output_handler(MR, Range, *MR.SourceManager, true);
-        std::cout
-            << YELLOW
-            << MR.SourceManager->getSpellingColumnNumber(FD->getLocation())
-            << ":"
-            << MR.SourceManager->getSpellingColumnNumber(FD->DEVI_GETLOCEND())
-            << NORMAL << "\n";
       }
     }
   }
@@ -293,7 +366,7 @@ public:
 private:
   Rewriter &Rewrite [[maybe_unused]];
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 class CXXMethodHandler : public MatchFinder::MatchCallback {
 public:
   CXXMethodHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -353,7 +426,7 @@ public:
 private:
   Rewriter &Rewrite [[maybe_unused]];
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 class VDecl : public MatchFinder::MatchCallback {
 public:
   VDecl(Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -382,7 +455,7 @@ public:
 private:
   Rewriter &Rewrite [[maybe_unused]];
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 class ClassDecl : public MatchFinder::MatchCallback {
 public:
   ClassDecl(Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -411,7 +484,7 @@ public:
 private:
   Rewriter &Rewrite [[maybe_unused]];
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 class StructHandler : public MatchFinder::MatchCallback {
 public:
   StructHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -437,7 +510,7 @@ public:
 private:
   Rewriter &Rewrite [[maybe_unused]];
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 class UnionHandler : public MatchFinder::MatchCallback {
 public:
   UnionHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -463,7 +536,7 @@ public:
 private:
   Rewriter &Rewrite [[maybe_unused]];
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 class NamedDeclHandler : public MatchFinder::MatchCallback {
 public:
   NamedDeclHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -492,7 +565,7 @@ public:
 private:
   Rewriter &Rewrite [[maybe_unused]];
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 class DeclRefExprHandler : public MatchFinder::MatchCallback {
 public:
   DeclRefExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -501,19 +574,20 @@ public:
     const DeclRefExpr *DRE =
         MR.Nodes.getNodeAs<clang::DeclRefExpr>("declrefexpr");
     if (DRE) {
+      const NamedDecl *ND = DRE->getFoundDecl();
+      std::string name = ND->getNameAsString();
       SourceLocation SL = DRE->DEVI_GETLOCSTART();
-      SourceLocation SLE = DRE->DEVI_GETLOCEND();
+      SourceLocation SLE = SL.getLocWithOffset(name.length() - 1);
+      //SourceLocation SLE = DRE->DEVI_GETLOCEND();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
         return void();
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
         return void();
-      const NamedDecl *ND = DRE->getFoundDecl();
-      std::string name = ND->getNameAsString();
-      std::cout << BLUE << name << NORMAL << "\n";
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false);
+        ast_type_traits::DynTypedNode DTN = ast_type_traits::DynTypedNode::create(*ND);
+        output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false, DTN);
       }
     }
   }
@@ -521,7 +595,7 @@ public:
 private:
   Rewriter &Rewrite [[maybe_unused]];
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 class CallExprHandler : public MatchFinder::MatchCallback {
 public:
   CallExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -542,6 +616,7 @@ public:
         return void();
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        ast_type_traits::DynTypedNode DTN = ast_type_traits::DynTypedNode::create(*ND);
         output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false);
       }
     }
@@ -550,7 +625,7 @@ public:
 private:
   Rewriter &Rewrite [[maybe_unused]];
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 class CXXCallExprHandler : public MatchFinder::MatchCallback {
 public:
   CXXCallExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -580,7 +655,7 @@ public:
 private:
   Rewriter &Rewrite [[maybe_unused]];
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 class PPInclusion : public PPCallbacks {
 public:
   explicit PPInclusion(SourceManager *SM, Rewriter *Rewrite)
@@ -651,7 +726,7 @@ private:
   const SourceManager &SM [[maybe_unused]];
   Rewriter &Rewrite [[maybe_unused]];
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 /// @brief A Clang Diagnostic Consumer that does nothing since we don't want
 /// clang to print out diag info.
 class BlankDiagConsumer : public clang::DiagnosticConsumer {
@@ -661,7 +736,7 @@ public:
   virtual void HandleDiagnostic(DiagnosticsEngine::Level DiagLevel,
                                 const Diagnostic &Info) override {}
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 class MyASTConsumer : public ASTConsumer {
 public:
   MyASTConsumer(Rewriter &R)
@@ -741,7 +816,7 @@ private:
   CXXCallExprHandler HandlerForCXXCallExpr;
   MatchFinder Matcher;
 };
-/*************************************************************************************************/
+/***********************************************************************************************/
 class AppFrontendAction : public ASTFrontendAction {
 public:
   AppFrontendAction() {}
@@ -777,8 +852,23 @@ private:
   BlankDiagConsumer *BDCProto = new BlankDiagConsumer;
   Rewriter TheRewriter;
 };
-/*************************************************************************************************/
-/*************************************************************************************************/
+/***********************************************************************************************/
+static ClangTool build_cgrep_instance(int argc,  const char** argv)
+{
+  CommonOptionsParser op(argc, argv, CGrepCat);
+  ClangTool cgrepInstance(op.getCompilations(), op.getSourcePathList());
+
+  return cgrepInstance;
+}
+
+static int run_cgrep_instance(ClangTool cgrepToolInstance)
+{
+  int ret = cgrepToolInstance.run(newFrontendActionFactory<AppFrontendAction>().get());
+
+  return ret;
+}
+
+/***********************************************************************************************/
 /*Main*/
 int main(int argc, const char **argv) {
   CommonOptionsParser op(argc, argv, CGrepCat);
@@ -788,9 +878,9 @@ int main(int argc, const char **argv) {
   int ret = Tool.run(newFrontendActionFactory<AppFrontendAction>().get());
 #if 0
   if ("" != CO_RECURSIVE) {
-    dig(CO_RECURSIVE);
+    dig(CO_RECURSIVE, argc, argv);
   }
 #endif
   return ret;
 }
-/*************************************************************************************************/
+/***********************************************************************************************/

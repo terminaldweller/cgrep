@@ -18,7 +18,7 @@ endif
 CXX_EXTRA?=
 CTAGS_I_PATH?=./
 #LD_FLAGS= -lstdc++fs
-LD_FLAGS=
+LD_FLAGS= -lboost_system -lboost_filesystem
 EXTRA_LD_FLAGS?=
 ADD_SANITIZERS_CC= -g -fsanitize=address -fno-omit-frame-pointer
 ADD_SANITIZERS_LD= -g -fsanitize=address
@@ -38,7 +38,6 @@ LLVM_CXX_FLAGS=$(shell $(LLVM_CONF) --cxxflags)
 LLVM_CXX_FLAGS+=-I$(shell $(LLVM_CONF) --src-root)/tools/clang/include\
  -I$(shell $(LLVM_CONF) --obj-root)/tools/clang/include\
  -std=c++17 -fexceptions
-#LLVM_LD_FLAGS=-Wl,--start-group $(shell $(LLVM_CONF) --libs) -Wl, --end-group
 LLVM_LD_FLAGS=-Wl,--start-group -lclangAST -lclangAnalysis -lclangBasic\
  -lclangDriver -lclangEdit -lclangFrontend -lclangFrontendTool\
  -lclangLex -lclangParse -lclangSema -lclangEdit -lclangASTMatchers\

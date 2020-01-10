@@ -15,7 +15,7 @@ addons:
       - wget https://apt.llvm.org/llvm.sh
       - chmod +x llvm.sh
       - sudo ./llvm.sh 10
-      - sudo apt-get install llvm-10-dev libclang-common-10-dev libclang-10-dev -y
+      - sudo apt-get install llvm-10-dev libclang-common-10-dev libclang-10-dev libboost-system-dev libboost-filesystem-dev -y
       - git submodule init
       - git submodule update
     build_command:
@@ -29,7 +29,7 @@ matrix:
       name: llvm5
       sudo: required
       language: cpp
-      before_script: 
+      before_script:
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
       - sudo add-apt-repository ppa:fkrull/deadsnakes -y
       - sudo apt-get update -y
@@ -37,11 +37,11 @@ matrix:
       - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main" | sudo tee -a /etc/apt/sources.list
       - sudo apt-get update -qq
       - travis_retry sudo apt-get install clang-5.0 libclang-5.0-dev libclang-common-5.0-dev libllvm5.0 llvm-5.0-dev llvm-5.0 llvm-5.0-runtime -y
-      - sudo apt-get install gcc-4.9 g++-4.9
+      - sudo apt-get install gcc-4.9 g++-4.9 libboost-system-dev libboost-filesystem-dev -y
       - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
       - git submodule init
       - git submodule update
-      script: 
+      script:
       - make CXX=clang-5.0 LLVM_CONF=llvm-config-5.0
       after_success:
       - bash run.sh
@@ -49,16 +49,16 @@ matrix:
       name: llvm6
       sudo: required
       language: cpp
-      before_script: 
+      before_script:
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
       - sudo apt-get update -y
       - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
       - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main" | sudo tee -a /etc/apt/sources.list
       - sudo apt-get update -qq
-      - travis_retry sudo apt-get install clang-6.0 libclang-6.0-dev libclang-common-6.0-dev libllvm6.0 llvm-6.0-dev llvm-6.0 llvm-6.0-runtime -y
+      - travis_retry sudo apt-get install clang-6.0 libclang-6.0-dev libclang-common-6.0-dev libllvm6.0 llvm-6.0-dev llvm-6.0 llvm-6.0-runtime libboost-system-dev libboost-filesystem-dev -y
       - git submodule init
       - git submodule update
-      script: 
+      script:
       - make CXX=clang-6.0 LLVM_CONF=llvm-config-6.0
       after_success:
         - ./run.sh
@@ -66,17 +66,17 @@ matrix:
       name: llvm7
       sudo: required
       language: cpp
-      before_script: 
+      before_script:
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
       - sudo apt-get update -y
       - sudo apt-get install libstdc++-7-dev -y
       - sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
       - sudo add-apt-repository "deb http://apt.llvm.org/bionic/   llvm-toolchain-bionic-7  main"
-      - sudo apt-get update 
-      - sudo apt-get install clang-7 llvm-7-dev libclang-common-7-dev libclang-7-dev -y
+      - sudo apt-get update
+      - sudo apt-get install clang-7 llvm-7-dev libclang-common-7-dev libclang-7-dev libboost-system-dev libboost-filesystem-dev -y
       - git submodule init
       - git submodule update
-      script: 
+      script:
         - make CXX=clang-7 LLVM_CONF=llvm-config-7
       after_success:
         bash run.sh
@@ -84,17 +84,17 @@ matrix:
       name: llvm8
       sudo: required
       language: cpp
-      before_script: 
+      before_script:
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
       - sudo apt-get update -y
       - sudo apt-get install libstdc++-7-dev -y
       - wget https://apt.llvm.org/llvm.sh
       - chmod +x llvm.sh
       - sudo ./llvm.sh 8
-      - sudo apt-get install llvm-8-dev libclang-common-8-dev libclang-8-dev -y
+      - sudo apt-get install llvm-8-dev libclang-common-8-dev libclang-8-dev libboost-system-dev libboost-filesystem-dev -y
       - git submodule init
       - git submodule update
-      script: 
+      script:
         - make CXX=clang-8 LLVM_CONF=llvm-config-8
       after_success:
         bash run.sh
@@ -102,17 +102,17 @@ matrix:
       name: llvm9
       sudo: required
       language: cpp
-      before_script: 
+      before_script:
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
       - sudo apt-get update -y
       - sudo apt-get install libstdc++-7-dev -y
       - sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
       - sudo add-apt-repository "deb http://apt.llvm.org/bionic/   llvm-toolchain-bionic-9  main"
-      - sudo apt-get update 
-      - sudo apt-get install clang-9 llvm-9-dev libclang-common-9-dev libclang-9-dev -y
+      - sudo apt-get update
+      - sudo apt-get install clang-9 llvm-9-dev libclang-common-9-dev libclang-9-dev libboost-system-dev libboost-filesystem-dev -y
       - git submodule init
       - git submodule update
-      script: 
+      script:
         - make CXX=clang-9 LLVM_CONF=llvm-config-9
       after_success:
         bash run.sh
@@ -120,17 +120,17 @@ matrix:
       name: llvm10
       sudo: required
       language: cpp
-      before_script: 
+      before_script:
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
       - sudo apt-get update -y
       - sudo apt-get install libstdc++-7-dev -y
       - wget https://apt.llvm.org/llvm.sh
       - chmod +x llvm.sh
       - sudo ./llvm.sh 10
-      - sudo apt-get install llvm-10-dev libclang-common-10-dev libclang-10-dev -y
+      - sudo apt-get install llvm-10-dev libclang-common-10-dev libclang-10-dev libboost-system-dev libboost-filesystem-dev -y
       - git submodule init
       - git submodule update
-      script: 
+      script:
         - make CXX=clang-10 LLVM_CONF=llvm-config-10
       after_success:
         bash run.sh
