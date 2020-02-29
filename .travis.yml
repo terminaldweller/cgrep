@@ -127,7 +127,8 @@ matrix:
       - wget https://apt.llvm.org/llvm.sh
       - chmod +x llvm.sh
       - sudo ./llvm.sh 10
-      - sudo apt-get install llvm-10-dev libclang-common-10-dev libclang-10-dev libboost-system-dev libboost-filesystem-dev -y
+        #- sudo apt-get install llvm-10-dev libclang-common-10-dev libclang-10-dev libboost-system-dev libboost-filesystem-dev -y
+      - sudo apt-get install llvm-dev libclang-common-dev libclang-dev libboost-system-dev libboost-filesystem-dev -y
       - git submodule init
       - git submodule update
       script:
