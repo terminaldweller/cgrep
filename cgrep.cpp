@@ -16,7 +16,7 @@ using namespace clang;
 using namespace clang::ast_matchers;
 using namespace clang::driver;
 using namespace clang::tooling;
-using namespace boost::filesystem;
+//using namespace boost::filesystem;
 /***********************************************************************************************/
 namespace {
 static llvm::cl::OptionCategory CGrepCat("cgrep options");
@@ -153,7 +153,7 @@ static std::string get_line_from_file(SourceManager &SM, const MatchFinder::Matc
  *
  * @param path
  */
-#if 1
+#if 0
 static void dig(boost::filesystem::path dir, int argc, const char** argv) {
   //just to be compatible with old gcc versions
   //for (const auto &entry : boost::filesystem::directory_iterator(dir)) {
