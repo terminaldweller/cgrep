@@ -1,0 +1,131 @@
+
+.TH CGREP "29 Feb 2020"
+.SH Farzad Sadeghi
+cgrep \ - grep for C-family source files
+.SH SYNOPSIS
+\fBCoffee\fP [ -h | -b ] [ -t \fItype\fP ]
+\fIcoffee\fP queues a request to the remote
+coffee machien at the device /fB/dev/cf0/fR.
+The required /fIamount/fP argument specifies
+the number of cups. generally between 0 and
+12 on ISO standard coffee machines.
+.SS Options
+.TP
+\fB-h\fP
+Brew hot coffee. Cold is the default.
+.TP
+\fB-b\fP
+Burn coffee. Especially useful when executing
+\fBcoffee\fP on behalf of your boss.
+.TP
+\fB-t\fItype\fR
+Specify the type of coffee to brew, where
+\fItype\fP is one of \fBcolumbian\fP,
+\fBreqular\fP, or \fBdecaf\fP.
+
+
+.TP
+\fB-A=<int>\fP
+same as grep, how many lines after the matched line to print
+
+.TP
+\fB-B=<int>\fP
+same as grep, howm many lines before the matched line to print
+
+.TP
+\fB--all\fP
+turns on all switches other than nameddecl
+
+.TP
+\fB--awk\fP
+outputs location in a gawk freidnly format
+
+.TP
+\fB--call\fP
+match function calls only
+
+.TP
+\fB--class\fP
+match class declrations only
+
+.TP
+\fB--cxxcall\fP
+match member function calls only
+
+.TP
+\fB--declrefexpr\fP
+matches declrefexpr
+
+.TP
+\fB--dir=<string>\fP
+recursively goes through all the files and directories. assumes compilation databases are present for all source files.
+
+.TP
+\fB--extra-arg=<string>\fP
+Additional argument to append to the compiler command line
+
+.TP
+\fB--extra-arg-before=<string>\fP
+Additional argument to prepend to the compiler command line
+
+.TP
+\fB--func\fP
+match functions only
+
+.TP
+\fB--header\fP
+match headers in header inclusions
+
+.TP
+\fB--macro\fP
+match macro definitions
+
+.TP
+\fB--mainfile\fP
+match identifiers in the main file only
+
+.TP
+\fB--memfunc\fP
+match member functions only
+
+.TP
+\fB--memvar\fP
+match member variables only
+
+.TP
+\fB--nameddecl\fP
+matches all named declrations
+
+.TP
+\fB-p=<string>\fP
+Build path
+
+.TP
+\fB--regex=<string>\fP
+the regex to match against
+
+.TP
+\fB--struct\fP
+match structures only
+
+.TP
+\fB--syshdr\fP
+match identifiers in system header as well
+
+.TP
+\fB--union\fP
+match unions only
+
+.TP
+\fB--var\fP
+match variables only
+
+.SH FILES
+.TP
+\fC/dev/cf0\fR
+The remote coffee machine device
+.SH "SEE ALSO"
+milk(5), sugar(5)
+.SH BUGS
+May require human intervention if coffee
+supply is exhausted.
