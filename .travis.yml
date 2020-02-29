@@ -124,13 +124,13 @@ matrix:
       - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
       - sudo apt-get update -y
       - sudo apt-get install libstdc++-7-dev -y
-      - wget https://apt.llvm.org/llvm.sh
-      - chmod +x llvm.sh
-      - sudo ./llvm.sh 10
-      - sudo apt-get install llvm-10-dev libclang-common-10-dev libclang-10-dev libboost-system-dev libboost-filesystem-dev -y
+      - sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+      - sudo add-apt-repository "deb http://apt.llvm.org/bionic/   llvm-toolchain-bionic-10  main"
+      - sudo apt-get update
+      - sudo apt-get install clang-10 llvm-10-dev libclang-common-10-dev libclang-10-dev libboost-system-dev libboost-filesystem-dev -y
       - git submodule init
       - git submodule update
       script:
-        - make CXX=clang LLVM_CONF=llvm-config
+        - make CXX=clang-10 LLVM_CONF=llvm-config-10
       after_success:
         bash run.sh
