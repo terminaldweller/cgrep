@@ -126,12 +126,12 @@ matrix:
       - sudo apt-get install libstdc++-7-dev -y
       - wget https://apt.llvm.org/llvm.sh
       - chmod +x llvm.sh
-      - sudo ./llvm.sh 10
+      - sudo ./llvm.sh
         #- sudo apt-get install llvm-10-dev libclang-common-10-dev libclang-10-dev libboost-system-dev libboost-filesystem-dev -y
       - sudo apt-get install llvm-dev libclang-common-dev libclang-dev libboost-system-dev libboost-filesystem-dev -y
       - git submodule init
       - git submodule update
       script:
-        - make CXX=clang-10 LLVM_CONF=llvm-config-10
+        - make CXX=clang LLVM_CONF=llvm-config
       after_success:
         bash run.sh
