@@ -153,7 +153,7 @@ static std::string get_line_from_file(SourceManager &SM, const MatchFinder::Matc
  *
  * @param path
  */
-#if 0
+#if 1
 static void dig(boost::filesystem::path dir, int argc, const char** argv) {
   //just to be compatible with old gcc versions
   //for (const auto &entry : boost::filesystem::directory_iterator(dir)) {
@@ -621,7 +621,7 @@ public:
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         ast_type_traits::DynTypedNode DTN = ast_type_traits::DynTypedNode::create(*ND);
-        output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false);
+        output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false, DTN);
       }
     }
   }
