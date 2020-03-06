@@ -327,7 +327,6 @@ public:
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         ast_type_traits::DynTypedNode DNode =
             ast_type_traits::DynTypedNode::create(*FD);
-        NamedDecl const *ND = DNode.get<NamedDecl>();
         auto StartLocation = FD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);

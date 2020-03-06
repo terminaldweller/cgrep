@@ -3,7 +3,6 @@
 .SH Farzad Sadeghi
 cgrep \ - grep for C-family source files
 
-
 .SH NAME
 .PP
 cgrep
@@ -15,11 +14,10 @@ cgrep [options] [target]
 .SH DESCRIPTION
 .PP
 \fBCgrep\fP [ OPTION ] [ TARGET ]
-\fIcgrep\fP cgrep is a grep-like tool for the 
-C-family languages. It supports a subset of grep
-options to search through C-famlily source files.
-cgrep is written using clang's libtooling and as such 
-will accept any option clang accepts as well. Like clang,
+.br
+Cgrep is a grep-like tool for the 
+C-family languages. cgrep is written using clang's libtooling and as such 
+will accept any option that clang accepts as well. Like clang,
 cgrep will require you to have a compilation database. 
 .PP
 If you can build your sources without any specific command-line 
@@ -28,105 +26,166 @@ tells clang to try to build the source without a compilation database.
 If you are using \fBmake\fP to build your code-base, you can use \fBBEAR(1)\fP
 to generate a compilation database.
 
+
 .SS Options
 .PP
 .TP
 \fB-A=<int>\fP
-same as grep, how many lines after the matched line to print
+How many lines after the matched line to print. Defaults to 0.
 
 .TP
 \fB-B=<int>\fP
-same as grep, howm many lines before the matched line to print
+Howm many lines before the matched line to print. Defaults to 0.
 
 .TP
 \fB--all\fP
-turns on all switches other than nameddecl
+Turns on all switches other than nameddecl.
 
 .TP
 \fB--awk\fP
-outputs location in a gawk freidnly format
+Outputs locations in a gawk friendly format, not meant for human consumption. Defaults to false.
 
 .TP
 \fB--call\fP
-match function calls only
+Match function calls.
 
 .TP
 \fB--class\fP
-match class declrations only
+Match class declarations.
 
 .TP
 \fB--cxxcall\fP
-match member function calls only
+Matches member function calls.
 
 .TP
 \fB--declrefexpr\fP
-matches declrefexpr
-
-.TP
-\fB--dir=<string>\fP
-recursively goes through all the files and directories. assumes compilation databases are present for all source files.
+Matches declrefexpr.
+.br
+\fIdeclreefexpr\fPs are any instance of a declaration that is being reference.
+For example:
+.br
+uint_32 my_var;
+.br
+my_var = 10;
+.br
+In the second line, \fImy_var\fP is a declaration that is being referenced.
+The rule applies for all named declarations.
 
 .TP
 \fB--extra-arg=<string>\fP
-Additional argument to append to the compiler command line
+Additional argument to append to the compiler command line.
+.br
+This is the option to use when you want to pass extra arguments 
+to cgrep. These would be the clang command line options.
 
 .TP
 \fB--extra-arg-before=<string>\fP
-Additional argument to prepend to the compiler command line
+Additional argument to prepend to the compiler command line.
+.br
+This is the option to use when you want to pass extra arguments 
+to cgrep. These would be the clang command line options.
 
 .TP
-\fB--func\fP
-match functions only
+\fB--func=<string>\fP
+Match function declarations.
+.br 
+Function definitions are also function declarations so for a function
+that has a declaration and a definition, cgrep will find two results.
 
 .TP
 \fB--header\fP
-match headers in header inclusions
+Match headers in header inclusions.
 
 .TP
 \fB--macro\fP
-match macro definitions
+Match macro definitions.
 
 .TP
 \fB--mainfile\fP
-match identifiers in the main file only
+Match identifiers in the main file only. Defaults to true.
+.br
+This option filters out matches found in the translation unit passed to
+cgrep.
 
 .TP
 \fB--memfunc\fP
-match member functions only
+Match member function declarations.
 
 .TP
 \fB--memvar\fP
-match member variables only
+Match member variable declarations.
 
 .TP
 \fB--nameddecl\fP
-matches all named declrations
+Matches all named declarations.
 
 .TP
-\fB-p=<string>\fP
-Build path
+\fB--nocolor\fP
+The output will have no colors.
+.br
+The option is meant to be used for terminal emulators that don't support
+ANSI escape sequences. This option disables the printing of any escape 
+sequences.
+
+.TP
+\fB--nodecl\fP
+Will not print out the declaration location for the matched identifier.
 
 .TP
 \fB--regex=<string>\fP
-the regex to match against
+The regex to match against.One thing to keep in mind is that the regex will 
+first pass through Cpp and then will pass through the regex engine. For 
+example if you want to match for a literal '\' character, on the command 
+line you will have to write '\\\\'. Cpp will remove the two backslashes 
+deciding that they are both escape sequences and pass the regex engine 
+the two backslashes, at which point the regex engine will understand 
+the first backslash to be an escape sequence for the second backslash. 
 
 .TP
 \fB--struct\fP
-match structures only
+Match structure declarations.
 
 .TP
 \fB--syshdr\fP
-match identifiers in system header as well
+Match identifiers in system header as well. Defaults to false.
+.br
+This option filters out headers that are included using <>.
 
 .TP
 \fB--union\fP
-match unions only
+Match union declarations.
 
 .TP
 \fB--var\fP
-match variables only
+Match variable declarations.
+.br
+This switch will also match function parameters.
 
-.SH "FILES"
+.SH EXAMPLE
+.PP
+.PP
+As an example if you want to match for declrefexpr and function calls,
+with no colors but with declarations present in the output you would write:
+.br
+cgrep --declrefexpr --call --nocolor --regex myawesomeregex myawesomecppfile.cpp
+.br
+In case you want to run cgrep without a compilation database, you can try:
+.br
+cgrep --declrefexpr --call --nocolor --regex myawesomeregex myawesomecppfile.cpp --
+.PP
+Passing the clang "std" option will let cgrep know which language the source file 
+is going to be in. For example:
+.br
+cgrep --declrefexpr --call --regex jaja --extra-arg=--std=c++17 myfile.cpp
+.br
+The above command lets cgrep know that the input file is a Cpp source file.
+.br
+To do the same for a C file, just pass it the C standard your source file 
+is following:
+.br
+cgrep --declrefexpr --call --regex jaja --extra-arg=--std=c11 myfile.c
+
+.SH FILES
 .PP
 \fBcgrep\fP
 The cgrep executable.
@@ -135,7 +194,13 @@ The cgrep executable.
 .PP
 BEAR(1)
 
-.SH "COPYRIGHT"
+.SH BUGS
+.PP
+cgrep \fBwill not\fP print out warnings and errors that your code might have
+so please make sure clang can compile your code before attempting to use 
+cgrep on your codebase.
+
+.SH COPYRIGHT
 .PP
 Copyright (C) by Farzad Sadeghi
 <https://github.com/bloodstalker/cgrep>

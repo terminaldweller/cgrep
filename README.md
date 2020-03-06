@@ -9,9 +9,7 @@
 
 # cgrep
 
-`grep` for C/C++ source files.
-Should be more or less fine for other C-family languages as well but I haven't tested for those since I don't use those. Let me know if you run into trouble using cgrep on those.
-The goal is to make the options and features as similar to `grep` as possible for ease of use.
+`grep` for C-family source files.
 
 ## Building
 
@@ -49,12 +47,15 @@ If your build tool doesn't do that, you can just use [bear](https://github.com/r
 You can also skip the compilation database altogether passing cgrep `--` after the input file name which means you have chosen not to pass it anything.
 You can pass the options by hand since cgrep is a Clang instance so it recognizes every option clang has.
 
-cgrep uses ANSI escape sequences for colors so your terminal should support those.
+cgrep uses ANSI escape sequences for colors so your terminal should support those. In case your terminal does not support ANSI escape sequences, you can silence those using the `--nocolor` option.
+By default, cgrep will print out the declaration location for a match. In case you don't want those in the output, you can pass cgrep the `--nodecl` switch.
+
+You can use `--extra-arg==--std=` to tell cgrep which C-family language the source file is supposed to be in.
 
 ## Options
 
 Here's an option list, though it might not be necessarily up-to-date.
-For an up-to-date list, you can run `cgrep --help`.
+For an up-to-date list, you can run `cgrep --help` or look at the man page.
 
 ```bash
   -A=<int>                    - Same as grep, how many lines after the matched line to print. Defaults to 0.
@@ -80,7 +81,7 @@ For an up-to-date list, you can run `cgrep --help`.
   -p=<string>                 - Build path
   --regex=<string>            - The regex to match against.
   --struct                    - Match structures.
-  --syshdr                    - Match identifiers in system header as well. Defaults to true.
+  --syshdr                    - Match identifiers in system header as well. Defaults to false.
   --union                     - Match unions.
   --var                       - Match variables.
 ```
@@ -88,7 +89,11 @@ For an up-to-date list, you can run `cgrep --help`.
 `cgrep` is a clang tool, so it will accept all valid clang command line options.
 
 ## Known Issues
+`cgrep` will not print out warnings or errors related to the source code so please make sure that clang can successfully build your file before running cgrep on it.
 
 ## License
+
+cgrep is licensed under GPL-3.0.
+
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep?ref=badge_large)
