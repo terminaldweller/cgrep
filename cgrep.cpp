@@ -24,71 +24,77 @@ cl::opt<std::string> CO_RECURSIVE(
     "dir",
     cl::desc("recursively goes through all the files and directories. assumes "
              "compilation databases are present for all source files."),
-    cl::init(""), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<std::string> CO_REGEX("regex", cl::desc("the regex to match against"),
+    cl::init(""), cl::cat(CGrepCat), cl::Optional);
+cl::opt<std::string> CO_REGEX("regex", cl::desc("The regex to match against."),
                               cl::init(""), cl::cat(CGrepCat),
                               cl::Required); // done
-cl::opt<bool> CO_FUNCTION("func", cl::desc("match functions only"),
+cl::opt<bool> CO_FUNCTION("func", cl::desc("Match functions."),
                           cl::init(false), cl::cat(CGrepCat),
                           cl::Optional); // done
 cl::opt<bool> CO_MEM_FUNCTION("memfunc",
-                              cl::desc("match member functions only"),
+                              cl::desc("Match member functions."),
                               cl::init(false), cl::cat(CGrepCat),
                               cl::Optional); // done
-cl::opt<bool> CO_VAR("var", cl::desc("match variables only"), cl::init(false),
+cl::opt<bool> CO_VAR("var", cl::desc("Match variables."), cl::init(false),
                      cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_CALL("call", cl::desc("match function calls only"),
+cl::opt<bool> CO_CALL("call", cl::desc("Match function calls."),
                       cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_CXXCALL("cxxcall",
-                         cl::desc("match member function calls only"),
+                         cl::desc("Match member function calls."),
                          cl::init(false), cl::cat(CGrepCat),
                          cl::Optional); // done
-cl::opt<bool> CO_MEMVAR("memvar", cl::desc("match member variables only"),
+cl::opt<bool> CO_MEMVAR("memvar", cl::desc("Match member variables."),
                         cl::init(false), cl::cat(CGrepCat),
                         cl::Optional); // done
-cl::opt<bool> CO_CLASS("class", cl::desc("match class declrations only"),
+cl::opt<bool> CO_CLASS("class", cl::desc("Match class declrations."),
                        cl::init(false), cl::cat(CGrepCat),
                        cl::Optional); // done
-cl::opt<bool> CO_STRUCT("struct", cl::desc("match structures only"),
+cl::opt<bool> CO_STRUCT("struct", cl::desc("Match structures."),
                         cl::init(false), cl::cat(CGrepCat),
                         cl::Optional); // done
-cl::opt<bool> CO_UNION("union", cl::desc("match unions only"), cl::init(false),
+cl::opt<bool> CO_UNION("union", cl::desc("Match unions."), cl::init(false),
                        cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_MACRO("macro", cl::desc("match macro definitions"),
+cl::opt<bool> CO_MACRO("macro", cl::desc("Match macro definitions."),
                        cl::init(false), cl::cat(CGrepCat),
                        cl::Optional); // done
 cl::opt<bool> CO_HEADER("header",
-                        cl::desc("match headers in header inclusions"),
+                        cl::desc("Match headers in header inclusions."),
                         cl::init(false), cl::cat(CGrepCat),
                         cl::Optional); // done
 cl::opt<bool> CO_ALL("all",
-                     cl::desc("turns on all switches other than nameddecl"),
+                     cl::desc("Turns on all switches other than nameddecl."),
                      cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_NAMEDDECL("nameddecl",
-                           cl::desc("matches all named declrations"),
+                           cl::desc("Matches all named declrations."),
                            cl::init(false), cl::cat(CGrepCat),
                            cl::Optional); // done
-cl::opt<bool> CO_DECLREFEXPR("declrefexpr", cl::desc("matches declrefexpr"),
+cl::opt<bool> CO_DECLREFEXPR("declrefexpr", cl::desc("Matches declrefexpr."),
                              cl::init(false), cl::cat(CGrepCat),
                              cl::Optional); // done
 cl::opt<bool> CO_AWK("awk",
-                     cl::desc("outputs location in a gawk freidnly format"),
-                     cl::init(false), cl::cat(CGrepCat), cl::Optional);
+                     cl::desc("Outputs location in a gawk freidnly format, not meant for human consumption. Defaults to false."),
+                     cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool> CO_NOCOLOR("nocolor",
+                     cl::desc("For terminals that don't supprt ANSI escape sequences. The default is to false."),
+                     cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool> CO_NODECL("nodecl",
+                     cl::desc("For switches that are not declarations, don't print declarations. Defaults to false."),
+                     cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_SYSHDR("syshdr",
-                        cl::desc("match identifiers in system header as well"),
+                        cl::desc("Match identifiers in system header as well. Defaults to true."),
                         cl::init(false), cl::cat(CGrepCat),
                         cl::Optional); // done
 cl::opt<bool> CO_MAINFILE("mainfile",
-                          cl::desc("match identifiers in the main file only"),
+                          cl::desc("Match identifiers in the main file only. Defaults to true."),
                           cl::init(true), cl::cat(CGrepCat),
                           cl::Optional); // done
 cl::opt<int> CO_A(
     "A",
-    cl::desc("same as grep, how many lines after the matched line to print"),
+    cl::desc("Same as grep, how many lines after the matched line to print. Defaults to 0."),
     cl::init(0), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<int> CO_B(
     "B",
-    cl::desc("same as grep, howm many lines before the matched line to print"),
+    cl::desc("Same as grep, howm many lines before the matched line to print. Defaults to 0."),
     cl::init(0), cl::cat(CGrepCat), cl::Optional); // done
 } // namespace
 /***********************************************************************************************/
@@ -119,6 +125,19 @@ cl::opt<int> CO_B(
 #define YELLOW "\033[1;33m"
 #define NORMAL "\033[0m"
 #define CLEAR "\033[2J"
+
+#define CC_RED (CO_NOCOLOR == true ? "" : RED)
+#define CC_CYAN (CO_NOCOLOR == true ? "" : CYAN)
+#define CC_GREEN (CO_NOCOLOR == true ? "" : GREEN)
+#define CC_BLUE (CO_NOCOLOR == true ? "" : BLUE)
+#define CC_BLACK (CO_NOCOLOR == true ? "" : BLACK)
+#define CC_BROWN (CO_NOCOLOR ==true ? "" : BROWN)
+#define CC_MAGENTA (CO_NOCOLOR == true ? "" : MAGENTA)
+#define CC_GRAY (CO_NOCOLOR == true ? "" : GRAY)
+#define CC_DARKGRAY (CO_NOCOLOR == true ? "" : DARKGRAY)
+#define CC_YELLOW (CO_NOCOLOR == true ? "" : YELLOW)
+#define CC_NORMAL (CO_NOCOLOR == true ? "" : NORMAL)
+#define CC_CLEAR (CO_NOCOLOR == true ? "" : CLEAR)
 /***********************************************************************************************/
 //forwartd declarations
 static ClangTool build_cgrep_instance(int argc,  const char** argv);
@@ -183,9 +202,7 @@ bool regex_handler(std::string rx_str, std::string identifier_name) {
   return std::regex_search(identifier_name, result, rx);
 }
 
-void output_handler(MatchFinder::MatchResult &MR, SourceLocation SL,
-                    SourceManager &SM, bool isdecl) {}
-
+#if 0
 void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
                     SourceManager &SM, bool isdecl) {
   std::ifstream mainfile;
@@ -232,7 +249,17 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
   std::cout << "\n";
   mainfile.close();
 }
+#endif
 
+/**
+ * @brief all print outs pass through here
+ *
+ * @param MR match result
+ * @param SR source range for the matched result
+ * @param SM sourcemanager
+ * @param isdecl is the matched result a delaration
+ * @param DTN the matched result cast to dynamically typed node
+ */
 void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
                     SourceManager &SM, bool isdecl, ast_type_traits::DynTypedNode &DTN) {
   std::ifstream mainfile;
@@ -243,11 +270,11 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
   auto columnnumber_end =
       MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1;
   if (CO_AWK) {
-    std::cout << MAGENTA << SR.getBegin().printToString(SM) << ":"
-              << SR.getEnd().printToString(SM) << NORMAL << "\n";
-    std::cout << RED << MR.SourceManager->getFilename(SR.getBegin()).str()
+    std::cout << CC_MAGENTA << SR.getBegin().printToString(SM) << ":"
+              << SR.getEnd().printToString(SM) << CC_NORMAL << "\n";
+    std::cout << CC_RED << MR.SourceManager->getFilename(SR.getBegin()).str()
               << ":" << linenumber << ":" << columnnumber_start
-              << NORMAL;
+              << CC_NORMAL;
   } else {
     unsigned line_range_begin = linenumber - CO_B;
     unsigned line_range_end = linenumber + CO_A;
@@ -257,26 +284,31 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
       line_nu++;
       if (line_nu >= line_range_begin && line_nu <= line_range_end) {
         if (line_nu == linenumber) {
-          std::cout << RED << MR.SourceManager->getFilename(SR.getBegin()).str()
+          std::cout << CC_RED << MR.SourceManager->getFilename(SR.getBegin()).str()
                     << ":" << linenumber << ":" << columnnumber_start << ":"
-                    << NORMAL;
+                    << CC_NORMAL;
           for (unsigned i = 0; i < line.length(); ++i) {
             if (i >= columnnumber_start && i <= columnnumber_end) {
-              std::cout << RED << line[i] << NORMAL;
+              std::cout << CC_RED << line[i] << CC_NORMAL;
             } else {
               std::cout << line[i];
             }
           }
-          if (isdecl) {
-            std::cout << GREEN << "\t<---declared here" << NORMAL;
-          } else {
-            const NamedDecl * ND = DTN.get<NamedDecl>();
-            if (nullptr != ND) {
-              SourceRange ND_SR = ND->getSourceRange();
-              get_line_from_file(SM, MR, ND_SR);
+          if (!CO_NODECL) {
+            if (isdecl) {
+              std::cout << CC_GREEN << "\t<---declared here" << CC_NORMAL << "\n";
+            } else {
+              const NamedDecl * ND = DTN.get<NamedDecl>();
+              if (nullptr != ND) {
+                SourceRange ND_SR = ND->getSourceRange();
+                get_line_from_file(SM, MR, ND_SR);
+              }
             }
+          } else {
+            std::cout << line << "\n";
           }
         } else {
+          std::cout << line << "\n";
         }
       }
     }
@@ -333,7 +365,7 @@ public:
         auto StartLocation = FD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
-        output_handler(MR, Range, *MR.SourceManager, FD->isThisDeclarationADefinition());
+        output_handler(MR, Range, *MR.SourceManager, FD->isThisDeclarationADefinition(), DNode);
       }
     }
   }
@@ -359,10 +391,11 @@ public:
         return void();
       std::string name = FD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*FD);
         auto StartLocation = FD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
-        output_handler(MR, Range, *MR.SourceManager, true);
+        output_handler(MR, Range, *MR.SourceManager, true, DNode);
       }
     }
   }
@@ -390,39 +423,12 @@ public:
         return void();
       std::string name = MD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        std::ifstream mainfile;
-        mainfile.open(MR.SourceManager->getFilename(SL).str());
-        auto linenumber = MR.SourceManager->getSpellingLineNumber(SL);
-        auto columnnumber_start =
-            MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
-        auto columnnumber_end =
-            columnnumber_start + DNI.getAsString().length() - 1;
-        unsigned line_range_begin = linenumber - CO_B;
-        unsigned line_range_end = linenumber + CO_A;
-        std::string line;
-        unsigned line_nu = 0;
-        while (getline(mainfile, line)) {
-          line_nu++;
-          if (line_nu >= line_range_begin && line_nu <= line_range_end) {
-            if (line_nu == linenumber) {
-              std::cout << RED << MR.SourceManager->getFilename(SL).str() << ":"
-                        << linenumber << ":" << columnnumber_start << ":"
-                        << NORMAL;
-              for (unsigned i = 1; i < line.length(); ++i) {
-                if (i >= columnnumber_start && i <= columnnumber_end) {
-                  std::cout << RED << line[i] << NORMAL;
-                } else {
-                  std::cout << line[i];
-                }
-              }
-              std::cout << GREEN << "\t<---defined here" << NORMAL << "\n";
-            } else {
-              std::cout << line << "\n";
-            }
-          }
-        }
-        std::cout << "\n";
-        mainfile.close();
+        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*MD);
+        NamedDecl const * ND = DNode.get<NamedDecl>();
+        auto StartLocation = MD->getLocation();
+        auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+        auto Range = SourceRange(StartLocation, EndLocation);
+        output_handler(MR, Range, *MR.SourceManager, MD->isThisDeclarationADefinition(), DNode);
       }
     }
   }
@@ -448,10 +454,11 @@ public:
         return void();
       std::string name = VD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*VD);
         auto StartLocation = VD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
-        output_handler(MR, Range, *MR.SourceManager, true);
+        output_handler(MR, Range, *MR.SourceManager, true, DNode);
       }
     }
   }
@@ -477,10 +484,11 @@ public:
         return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*RD);
         auto StartLocation = RD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
-        output_handler(MR, Range, *MR.SourceManager, true);
+        output_handler(MR, Range, *MR.SourceManager, true, DNode);
       }
     }
   }
@@ -506,7 +514,8 @@ public:
         return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        output_handler(MR, SR, *MR.SourceManager, true);
+        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*RD);
+        output_handler(MR, SR, *MR.SourceManager, true, DNode);
       }
     }
   }
@@ -532,7 +541,8 @@ public:
         return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        output_handler(MR, SR, *MR.SourceManager, true);
+        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*RD);
+        output_handler(MR, SR, *MR.SourceManager, true, DNode);
       }
     }
   }
@@ -558,10 +568,11 @@ public:
         return void();
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*ND);
         auto StartLocation = ND->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
-        output_handler(MR, Range, *MR.SourceManager, true);
+        output_handler(MR, Range, *MR.SourceManager, true, DNode);
       }
     }
   }
@@ -651,7 +662,8 @@ public:
         return void();
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        output_handler(MR, SR, *MR.SourceManager, true);
+        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*CE);
+        output_handler(MR, SR, *MR.SourceManager, true, DNode);
       }
     }
   }
@@ -888,3 +900,4 @@ int main(int argc, const char **argv) {
   return ret;
 }
 /***********************************************************************************************/
+
