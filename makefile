@@ -98,7 +98,7 @@ depend:.depend
 
 -include ./.depend
 
-%.o:%.cpp
+%.o:%.cpp pch.hpp.gch
 	$(CXX) -include-pch pch.hpp.gch $(CXX_FLAGS) -c $< -o $@
 
 %.odbg:%.cpp
