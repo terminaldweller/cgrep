@@ -104,7 +104,7 @@ depend:.depend
 %.odbg:%.cpp
 	$(CXX) $(CXX_FLAGS) -g -c $< -o $@
 
-%.ocov:%.cpp
+%.ocov:%.cpp pch.hpp.gch
 	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
 
 pch.hpp.gch: pch.hpp
@@ -132,12 +132,12 @@ $(TARGET)-cov: $(TARGET).ocov ./cfe-extra/cfe_extra.ocov
 	$(CXX) $^ $(LD_FLAGS) $(COV_LD) -o $@
 
 cov: runcov
-	@llvm-profdata merge -sparse ./default.profraw -o ./default.profdata
-	@llvm-cov show $(TARGET)-cov -instr-profile=default.profdata -ignore-filename-regex=llvm clang
+	@llvm-profdata merge -sparse ./one.profraw ./two.profraw ./three.profraw ./four.profraw ./five.profraw ./six.profraw ./seven.profraw ./eight.profraw ./nine.profraw -o ./cgrep.profdata
+	@llvm-cov show $(TARGET)-cov -instr-profile=cgrep.profdata -ignore-filename-regex=llvm clang
 
 covrep: runcov
-	@llvm-profdata merge -sparse ./default.profraw -o ./default.profdata
-	@llvm-cov report $(TARGET)-cov -instr-profile=default.profdata -ignore-filename-regex=llvm -ignore-filename-regex=clang -show-functions autosarpp.cpp
+	@llvm-profdata merge -sparse ./one.profraw ./two.profraw ./three.profraw ./four.profraw ./five.profraw ./six.profraw ./seven.profraw ./eight.profraw ./nine.profraw -o ./cgrep.profdata
+	@llvm-cov report $(TARGET)-cov -instr-profile=cgrep.profdata -ignore-filename-regex=llvm -ignore-filename-regex=clang -show-functions cgrep.cpp
 
 ASM:$(ASM_LIST)
 
@@ -162,7 +162,7 @@ $(TARGET).a: $(TARGET).o ./cfe-extra/cfe_extra.o
 	ar rcs $(TARGET).a $(TARGET).o
 
 runcov: $(TARGET)-cov
-	$(TARGET)-cov ./cgrep.cpp --
+	- ./covrun.sh
 
 test: $(TARGET)
 	$(TARGET) --A 1 --B 1 --regex write --memvar ./cgrep.cpp

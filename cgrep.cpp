@@ -601,8 +601,9 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
         return void();
       const NamedDecl *ND = CE->getDirectCallee();
-      if (ND)
+      if (ND == nullptr) {
         return void();
+      }
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         ast_type_traits::DynTypedNode DTN =
@@ -633,8 +634,9 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
         return void();
       const NamedDecl *ND = CE->getDirectCallee();
-      if (ND)
+      if (ND == nullptr) {
         return void();
+      }
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         ast_type_traits::DynTypedNode DNode =
