@@ -158,10 +158,10 @@ static std::string get_line_from_file(SourceManager &SM,
   std::string mainfile_str = MR.SourceManager->getFilename(SR.getBegin()).str();
   mainfile.open(mainfile_str);
   auto linenumber = MR.SourceManager->getSpellingLineNumber(SR.getBegin());
-  auto columnnumber_start =
-      MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
-  auto columnnumber_end =
-      MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1;
+  //auto columnnumber_start =
+      //MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
+  //auto columnnumber_end =
+      //MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1;
 
   std::string line;
   unsigned line_nu = 0;
@@ -290,8 +290,8 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
 std::vector<std::string> listDirs(std::string path) {
   std::vector<std::string> dummy;
   DIR *dir;
-  struct dirent *ent;
   if ((dir = opendir(path.c_str())) != nullptr) {
+    struct dirent *ent;
     while ((ent = readdir(dir)) != nullptr) {
       std::cout << "name: " << ent->d_name << "\ttype:" << int(ent->d_type)
                 << "\n";
@@ -393,7 +393,6 @@ public:
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         ast_type_traits::DynTypedNode DNode =
             ast_type_traits::DynTypedNode::create(*MD);
-        NamedDecl const *ND = DNode.get<NamedDecl>();
         auto StartLocation = MD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
