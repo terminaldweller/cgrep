@@ -2,28 +2,34 @@
 .TH CGREP "29 Feb 2020"
 .SH Farzad Sadeghi
 cgrep \ - grep for C-family source files
+
+
+.SH NAME
+.PP
+cgrep
+
 .SH SYNOPSIS
-\fBCoffee\fP [ -h | -b ] [ -t \fItype\fP ]
-\fIcoffee\fP queues a request to the remote
-coffee machien at the device /fB/dev/cf0/fR.
-The required /fIamount/fP argument specifies
-the number of cups. generally between 0 and
-12 on ISO standard coffee machines.
+.PP
+cgrep [options] [target]
+
+.SH DESCRIPTION
+.PP
+\fBCgrep\fP [ OPTION ] [ TARGET ]
+\fIcgrep\fP cgrep is a grep-like tool for the 
+C-family languages. It supports a subset of grep
+options to search through C-famlily source files.
+cgrep is written using clang's libtooling and as such 
+will accept any option clang accepts as well. Like clang,
+cgrep will require you to have a compilation database. 
+.PP
+If you can build your sources without any specific command-line 
+options, you can pass "--" as the last command-line option which
+tells clang to try to build the source without a compilation database.
+If you are using \fBmake\fP to build your code-base, you can use \fBBEAR(1)\fP
+to generate a compilation database.
+
 .SS Options
-.TP
-\fB-h\fP
-Brew hot coffee. Cold is the default.
-.TP
-\fB-b\fP
-Burn coffee. Especially useful when executing
-\fBcoffee\fP on behalf of your boss.
-.TP
-\fB-t\fItype\fR
-Specify the type of coffee to brew, where
-\fItype\fP is one of \fBcolumbian\fP,
-\fBreqular\fP, or \fBdecaf\fP.
-
-
+.PP
 .TP
 \fB-A=<int>\fP
 same as grep, how many lines after the matched line to print
@@ -120,12 +126,19 @@ match unions only
 \fB--var\fP
 match variables only
 
-.SH FILES
-.TP
-\fC/dev/cf0\fR
-The remote coffee machine device
+.SH "FILES"
+.PP
+\fBcgrep\fP
+The cgrep executable.
+
 .SH "SEE ALSO"
-milk(5), sugar(5)
-.SH BUGS
-May require human intervention if coffee
-supply is exhausted.
+.PP
+BEAR(1)
+
+.SH "COPYRIGHT"
+.PP
+Copyright (C) by Farzad Sadeghi
+<https://github.com/bloodstalker/cgrep>
+
+.SH "AUTHORS"
+Farzad Sadeghi
