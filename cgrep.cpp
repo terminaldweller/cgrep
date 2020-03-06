@@ -16,7 +16,7 @@ using namespace clang;
 using namespace clang::ast_matchers;
 using namespace clang::driver;
 using namespace clang::tooling;
-//using namespace boost::filesystem;
+// using namespace boost::filesystem;
 /***********************************************************************************************/
 namespace {
 static llvm::cl::OptionCategory CGrepCat("cgrep options");
@@ -28,19 +28,17 @@ cl::opt<std::string> CO_RECURSIVE(
 cl::opt<std::string> CO_REGEX("regex", cl::desc("The regex to match against."),
                               cl::init(""), cl::cat(CGrepCat),
                               cl::Required); // done
-cl::opt<bool> CO_FUNCTION("func", cl::desc("Match functions."),
-                          cl::init(false), cl::cat(CGrepCat),
+cl::opt<bool> CO_FUNCTION("func", cl::desc("Match functions."), cl::init(false),
+                          cl::cat(CGrepCat),
                           cl::Optional); // done
-cl::opt<bool> CO_MEM_FUNCTION("memfunc",
-                              cl::desc("Match member functions."),
+cl::opt<bool> CO_MEM_FUNCTION("memfunc", cl::desc("Match member functions."),
                               cl::init(false), cl::cat(CGrepCat),
                               cl::Optional); // done
 cl::opt<bool> CO_VAR("var", cl::desc("Match variables."), cl::init(false),
                      cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_CALL("call", cl::desc("Match function calls."),
                       cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_CXXCALL("cxxcall",
-                         cl::desc("Match member function calls."),
+cl::opt<bool> CO_CXXCALL("cxxcall", cl::desc("Match member function calls."),
                          cl::init(false), cl::cat(CGrepCat),
                          cl::Optional); // done
 cl::opt<bool> CO_MEMVAR("memvar", cl::desc("Match member variables."),
@@ -71,31 +69,39 @@ cl::opt<bool> CO_NAMEDDECL("nameddecl",
 cl::opt<bool> CO_DECLREFEXPR("declrefexpr", cl::desc("Matches declrefexpr."),
                              cl::init(false), cl::cat(CGrepCat),
                              cl::Optional); // done
-cl::opt<bool> CO_AWK("awk",
-                     cl::desc("Outputs location in a gawk freidnly format, not meant for human consumption. Defaults to false."),
-                     cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool>
+    CO_AWK("awk",
+           cl::desc("Outputs location in a gawk freidnly format, not meant for "
+                    "human consumption. Defaults to false."),
+           cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_NOCOLOR("nocolor",
-                     cl::desc("For terminals that don't supprt ANSI escape sequences. The default is to false."),
-                     cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_NODECL("nodecl",
-                     cl::desc("For switches that are not declarations, don't print declarations. Defaults to false."),
-                     cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_SYSHDR("syshdr",
-                        cl::desc("Match identifiers in system header as well. Defaults to true."),
-                        cl::init(false), cl::cat(CGrepCat),
-                        cl::Optional); // done
-cl::opt<bool> CO_MAINFILE("mainfile",
-                          cl::desc("Match identifiers in the main file only. Defaults to true."),
-                          cl::init(true), cl::cat(CGrepCat),
-                          cl::Optional); // done
-cl::opt<int> CO_A(
-    "A",
-    cl::desc("Same as grep, how many lines after the matched line to print. Defaults to 0."),
-    cl::init(0), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<int> CO_B(
-    "B",
-    cl::desc("Same as grep, howm many lines before the matched line to print. Defaults to 0."),
-    cl::init(0), cl::cat(CGrepCat), cl::Optional); // done
+                         cl::desc("For terminals that don't supprt ANSI escape "
+                                  "sequences. The default is to false."),
+                         cl::init(false), cl::cat(CGrepCat),
+                         cl::Optional); // done
+cl::opt<bool>
+    CO_NODECL("nodecl",
+              cl::desc("For switches that are not declarations, don't print "
+                       "declarations. Defaults to false."),
+              cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<bool> CO_SYSHDR(
+    "syshdr",
+    cl::desc("Match identifiers in system header as well. Defaults to true."),
+    cl::init(false), cl::cat(CGrepCat),
+    cl::Optional); // done
+cl::opt<bool> CO_MAINFILE(
+    "mainfile",
+    cl::desc("Match identifiers in the main file only. Defaults to true."),
+    cl::init(true), cl::cat(CGrepCat),
+    cl::Optional); // done
+cl::opt<int> CO_A("A",
+                  cl::desc("Same as grep, how many lines after the matched "
+                           "line to print. Defaults to 0."),
+                  cl::init(0), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<int> CO_B("B",
+                  cl::desc("Same as grep, howm many lines before the matched "
+                           "line to print. Defaults to 0."),
+                  cl::init(0), cl::cat(CGrepCat), cl::Optional); // done
 } // namespace
 /***********************************************************************************************/
 #if 1
@@ -131,7 +137,7 @@ cl::opt<int> CO_B(
 #define CC_GREEN (CO_NOCOLOR == true ? "" : GREEN)
 #define CC_BLUE (CO_NOCOLOR == true ? "" : BLUE)
 #define CC_BLACK (CO_NOCOLOR == true ? "" : BLACK)
-#define CC_BROWN (CO_NOCOLOR ==true ? "" : BROWN)
+#define CC_BROWN (CO_NOCOLOR == true ? "" : BROWN)
 #define CC_MAGENTA (CO_NOCOLOR == true ? "" : MAGENTA)
 #define CC_GRAY (CO_NOCOLOR == true ? "" : GRAY)
 #define CC_DARKGRAY (CO_NOCOLOR == true ? "" : DARKGRAY)
@@ -139,19 +145,23 @@ cl::opt<int> CO_B(
 #define CC_NORMAL (CO_NOCOLOR == true ? "" : NORMAL)
 #define CC_CLEAR (CO_NOCOLOR == true ? "" : CLEAR)
 /***********************************************************************************************/
-//forwartd declarations
-static ClangTool build_cgrep_instance(int argc,  const char** argv);
+// forwartd declarations
+static ClangTool build_cgrep_instance(int argc, const char **argv);
 static int run_cgrep_instance(ClangTool cgrepToolInstance);
 /***********************************************************************************************/
-static std::string get_line_from_file(SourceManager &SM, const MatchFinder::MatchResult & MR, SourceRange SR) {
+static std::string get_line_from_file(SourceManager &SM,
+                                      const MatchFinder::MatchResult &MR,
+                                      SourceRange SR) {
   std::string Result = "";
 
   std::ifstream mainfile;
   std::string mainfile_str = MR.SourceManager->getFilename(SR.getBegin()).str();
   mainfile.open(mainfile_str);
   auto linenumber = MR.SourceManager->getSpellingLineNumber(SR.getBegin());
-  auto columnnumber_start = MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
-  auto columnnumber_end = MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1;
+  auto columnnumber_start =
+      MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
+  auto columnnumber_end =
+      MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1;
 
   std::string line;
   unsigned line_nu = 0;
@@ -160,7 +170,9 @@ static std::string get_line_from_file(SourceManager &SM, const MatchFinder::Matc
     line_nu++;
     if (line_nu == linenumber) {
       Result = line;
-      std::cout << GREEN << "\n" << mainfile_str << ":" <<  linenumber << ":" << line << "\t <---declared here" << NORMAL << "\n";
+      std::cout << CC_GREEN << "\n"
+                << mainfile_str << ":" << linenumber << ":" << line
+                << "\t <---declared here" << CC_NORMAL << "\n";
     }
   }
 
@@ -191,7 +203,7 @@ static void dig(boost::filesystem::path dir, int argc, const char** argv) {
  * @param rx_str
  * @return the preprocessed string
  */
-std::string regex_preprocessor(std::string rx_str) {
+std::string regex_preprocessor(const std::string &rx_str) {
   std::string ret_rx_str;
   return ret_rx_str;
 }
@@ -201,55 +213,6 @@ bool regex_handler(std::string rx_str, std::string identifier_name) {
   std::smatch result;
   return std::regex_search(identifier_name, result, rx);
 }
-
-#if 0
-void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
-                    SourceManager &SM, bool isdecl) {
-  std::ifstream mainfile;
-  mainfile.open(MR.SourceManager->getFilename(SR.getBegin()).str());
-  auto linenumber = MR.SourceManager->getSpellingLineNumber(SR.getBegin());
-  auto columnnumber_start =
-      MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
-  auto columnnumber_end =
-      MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1;
-  if (CO_AWK) {
-    std::cout << MAGENTA << SR.getBegin().printToString(SM) << ":"
-              << SR.getEnd().printToString(SM) << NORMAL << "\n";
-    std::cout << RED << MR.SourceManager->getFilename(SR.getBegin()).str()
-              << ":" << linenumber << ":" << columnnumber_start
-              << NORMAL;
-  } else {
-    unsigned line_range_begin = linenumber - CO_B;
-    unsigned line_range_end = linenumber + CO_A;
-    std::string line;
-    unsigned line_nu = 0;
-    while (getline(mainfile, line)) {
-      line_nu++;
-      if (line_nu >= line_range_begin && line_nu <= line_range_end) {
-        if (line_nu == linenumber) {
-          std::cout << RED << MR.SourceManager->getFilename(SR.getBegin()).str()
-                    << ":" << linenumber << ":" << columnnumber_start << ":"
-                    << NORMAL;
-          for (unsigned i = 0; i < line.length(); ++i) {
-            if (i >= columnnumber_start && i <= columnnumber_end) {
-              std::cout << RED << line[i] << NORMAL;
-            } else {
-              std::cout << line[i];
-            }
-          }
-          if (isdecl) {
-            std::cout << GREEN << "\t<---declared here" << NORMAL << "\n";
-          }
-        } else {
-          std::cout << line << "\n";
-        }
-      }
-    }
-  }
-  std::cout << "\n";
-  mainfile.close();
-}
-#endif
 
 /**
  * @brief all print outs pass through here
@@ -261,7 +224,8 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
  * @param DTN the matched result cast to dynamically typed node
  */
 void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
-                    SourceManager &SM, bool isdecl, ast_type_traits::DynTypedNode &DTN) {
+                    SourceManager &SM, bool isdecl,
+                    ast_type_traits::DynTypedNode &DTN) {
   std::ifstream mainfile;
   mainfile.open(MR.SourceManager->getFilename(SR.getBegin()).str());
   auto linenumber = MR.SourceManager->getSpellingLineNumber(SR.getBegin());
@@ -273,8 +237,7 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
     std::cout << CC_MAGENTA << SR.getBegin().printToString(SM) << ":"
               << SR.getEnd().printToString(SM) << CC_NORMAL << "\n";
     std::cout << CC_RED << MR.SourceManager->getFilename(SR.getBegin()).str()
-              << ":" << linenumber << ":" << columnnumber_start
-              << CC_NORMAL;
+              << ":" << linenumber << ":" << columnnumber_start << CC_NORMAL;
   } else {
     unsigned line_range_begin = linenumber - CO_B;
     unsigned line_range_end = linenumber + CO_A;
@@ -284,8 +247,9 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
       line_nu++;
       if (line_nu >= line_range_begin && line_nu <= line_range_end) {
         if (line_nu == linenumber) {
-          std::cout << CC_RED << MR.SourceManager->getFilename(SR.getBegin()).str()
-                    << ":" << linenumber << ":" << columnnumber_start << ":"
+          std::cout << CC_RED
+                    << MR.SourceManager->getFilename(SR.getBegin()).str() << ":"
+                    << linenumber << ":" << columnnumber_start << ":"
                     << CC_NORMAL;
           for (unsigned i = 0; i < line.length(); ++i) {
             if (i >= columnnumber_start && i <= columnnumber_end) {
@@ -296,9 +260,10 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
           }
           if (!CO_NODECL) {
             if (isdecl) {
-              std::cout << CC_GREEN << "\t<---declared here" << CC_NORMAL << "\n";
+              std::cout << CC_GREEN << "\t<---declared here" << CC_NORMAL
+                        << "\n";
             } else {
-              const NamedDecl * ND = DTN.get<NamedDecl>();
+              const NamedDecl *ND = DTN.get<NamedDecl>();
               if (nullptr != ND) {
                 SourceRange ND_SR = ND->getSourceRange();
                 get_line_from_file(SM, MR, ND_SR);
@@ -343,7 +308,7 @@ std::vector<std::string> listDirs(std::string path) {
 /***********************************************************************************************/
 class FunctionHandler : public MatchFinder::MatchCallback {
 public:
-  FunctionHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  explicit FunctionHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
     const FunctionDecl *FD =
@@ -360,12 +325,14 @@ public:
         return void();
       std::string name = FD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*FD);
-        NamedDecl const * ND = DNode.get<NamedDecl>();
+        ast_type_traits::DynTypedNode DNode =
+            ast_type_traits::DynTypedNode::create(*FD);
+        NamedDecl const *ND = DNode.get<NamedDecl>();
         auto StartLocation = FD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
-        output_handler(MR, Range, *MR.SourceManager, FD->isThisDeclarationADefinition(), DNode);
+        output_handler(MR, Range, *MR.SourceManager,
+                       FD->isThisDeclarationADefinition(), DNode);
       }
     }
   }
@@ -376,7 +343,7 @@ private:
 /***********************************************************************************************/
 class FieldHandler : public MatchFinder::MatchCallback {
 public:
-  FieldHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  explicit FieldHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
     const FieldDecl *FD = MR.Nodes.getNodeAs<clang::FieldDecl>("fielddecl");
@@ -391,7 +358,8 @@ public:
         return void();
       std::string name = FD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*FD);
+        ast_type_traits::DynTypedNode DNode =
+            ast_type_traits::DynTypedNode::create(*FD);
         auto StartLocation = FD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -406,7 +374,7 @@ private:
 /***********************************************************************************************/
 class CXXMethodHandler : public MatchFinder::MatchCallback {
 public:
-  CXXMethodHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  explicit CXXMethodHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
     const CXXMethodDecl *MD =
@@ -423,12 +391,14 @@ public:
         return void();
       std::string name = MD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*MD);
-        NamedDecl const * ND = DNode.get<NamedDecl>();
+        ast_type_traits::DynTypedNode DNode =
+            ast_type_traits::DynTypedNode::create(*MD);
+        NamedDecl const *ND = DNode.get<NamedDecl>();
         auto StartLocation = MD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
-        output_handler(MR, Range, *MR.SourceManager, MD->isThisDeclarationADefinition(), DNode);
+        output_handler(MR, Range, *MR.SourceManager,
+                       MD->isThisDeclarationADefinition(), DNode);
       }
     }
   }
@@ -439,7 +409,7 @@ private:
 /***********************************************************************************************/
 class VDecl : public MatchFinder::MatchCallback {
 public:
-  VDecl(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  explicit VDecl(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
     const VarDecl *VD = MR.Nodes.getNodeAs<clang::VarDecl>("vardecl");
@@ -454,7 +424,8 @@ public:
         return void();
       std::string name = VD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*VD);
+        ast_type_traits::DynTypedNode DNode =
+            ast_type_traits::DynTypedNode::create(*VD);
         auto StartLocation = VD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -469,7 +440,7 @@ private:
 /***********************************************************************************************/
 class ClassDecl : public MatchFinder::MatchCallback {
 public:
-  ClassDecl(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  explicit ClassDecl(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
     const RecordDecl *RD = MR.Nodes.getNodeAs<clang::RecordDecl>("classdecl");
@@ -484,7 +455,8 @@ public:
         return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*RD);
+        ast_type_traits::DynTypedNode DNode =
+            ast_type_traits::DynTypedNode::create(*RD);
         auto StartLocation = RD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -499,7 +471,7 @@ private:
 /***********************************************************************************************/
 class StructHandler : public MatchFinder::MatchCallback {
 public:
-  StructHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  explicit StructHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
     const RecordDecl *RD = MR.Nodes.getNodeAs<clang::RecordDecl>("structdecl");
@@ -514,7 +486,8 @@ public:
         return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*RD);
+        ast_type_traits::DynTypedNode DNode =
+            ast_type_traits::DynTypedNode::create(*RD);
         output_handler(MR, SR, *MR.SourceManager, true, DNode);
       }
     }
@@ -526,7 +499,7 @@ private:
 /***********************************************************************************************/
 class UnionHandler : public MatchFinder::MatchCallback {
 public:
-  UnionHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  explicit UnionHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
     const RecordDecl *RD = MR.Nodes.getNodeAs<clang::RecordDecl>("uniondecl");
@@ -541,7 +514,8 @@ public:
         return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*RD);
+        ast_type_traits::DynTypedNode DNode =
+            ast_type_traits::DynTypedNode::create(*RD);
         output_handler(MR, SR, *MR.SourceManager, true, DNode);
       }
     }
@@ -553,7 +527,7 @@ private:
 /***********************************************************************************************/
 class NamedDeclHandler : public MatchFinder::MatchCallback {
 public:
-  NamedDeclHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  explicit NamedDeclHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
     const NamedDecl *ND = MR.Nodes.getNodeAs<clang::NamedDecl>("namedecl");
@@ -568,7 +542,8 @@ public:
         return void();
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*ND);
+        ast_type_traits::DynTypedNode DNode =
+            ast_type_traits::DynTypedNode::create(*ND);
         auto StartLocation = ND->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -583,7 +558,7 @@ private:
 /***********************************************************************************************/
 class DeclRefExprHandler : public MatchFinder::MatchCallback {
 public:
-  DeclRefExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  explicit DeclRefExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
     const DeclRefExpr *DRE =
@@ -593,7 +568,7 @@ public:
       std::string name = ND->getNameAsString();
       SourceLocation SL = DRE->DEVI_GETLOCSTART();
       SourceLocation SLE = SL.getLocWithOffset(name.length() - 1);
-      //SourceLocation SLE = DRE->DEVI_GETLOCEND();
+      // SourceLocation SLE = DRE->DEVI_GETLOCEND();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
@@ -601,7 +576,8 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
         return void();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DTN = ast_type_traits::DynTypedNode::create(*ND);
+        ast_type_traits::DynTypedNode DTN =
+            ast_type_traits::DynTypedNode::create(*ND);
         output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false, DTN);
       }
     }
@@ -613,7 +589,7 @@ private:
 /***********************************************************************************************/
 class CallExprHandler : public MatchFinder::MatchCallback {
 public:
-  CallExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  explicit CallExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
     const CallExpr *CE = MR.Nodes.getNodeAs<clang::CallExpr>("callexpr");
@@ -631,7 +607,8 @@ public:
         return void();
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DTN = ast_type_traits::DynTypedNode::create(*ND);
+        ast_type_traits::DynTypedNode DTN =
+            ast_type_traits::DynTypedNode::create(*ND);
         output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false, DTN);
       }
     }
@@ -643,7 +620,7 @@ private:
 /***********************************************************************************************/
 class CXXCallExprHandler : public MatchFinder::MatchCallback {
 public:
-  CXXCallExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+  explicit CXXCallExprHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
     const CXXMemberCallExpr *CE =
@@ -662,7 +639,8 @@ public:
         return void();
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode = ast_type_traits::DynTypedNode::create(*CE);
+        ast_type_traits::DynTypedNode DNode =
+            ast_type_traits::DynTypedNode::create(*CE);
         output_handler(MR, SR, *MR.SourceManager, true, DNode);
       }
     }
@@ -753,9 +731,9 @@ public:
                                 const Diagnostic &Info) override {}
 };
 /***********************************************************************************************/
-class MyASTConsumer : public ASTConsumer {
+class CgrepASTConsumer : public ASTConsumer {
 public:
-  MyASTConsumer(Rewriter &R)
+  explicit CgrepASTConsumer(Rewriter &R)
       : HandlerForVar(R), HandlerForClass(R), HandlerForCalledFunc(R),
         HandlerForCXXMethod(R), HandlerForField(R), HandlerForStruct(R),
         HandlerForUnion(R), HandlerForNamedDecl(R), HandlerForDeclRefExpr(R),
@@ -857,10 +835,10 @@ public:
     DE.setClient(BDCProto, false);
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
 #if __clang_major__ <= 9
-    return llvm::make_unique<MyASTConsumer>(TheRewriter);
+    return llvm::make_unique<CgrepASTConsumer>(TheRewriter);
 #endif
 #if __clang_major__ >= 10
-    return std::make_unique<MyASTConsumer>(TheRewriter);
+    return std::make_unique<CgrepASTConsumer>(TheRewriter);
 #endif
   }
 
@@ -869,17 +847,16 @@ private:
   Rewriter TheRewriter;
 };
 /***********************************************************************************************/
-static ClangTool build_cgrep_instance(int argc,  const char** argv)
-{
+static ClangTool build_cgrep_instance(int argc, const char **argv) {
   CommonOptionsParser op(argc, argv, CGrepCat);
   ClangTool cgrepInstance(op.getCompilations(), op.getSourcePathList());
 
   return cgrepInstance;
 }
 
-static int run_cgrep_instance(ClangTool cgrepToolInstance)
-{
-  int ret = cgrepToolInstance.run(newFrontendActionFactory<AppFrontendAction>().get());
+static int run_cgrep_instance(ClangTool cgrepToolInstance) {
+  int ret = cgrepToolInstance.run(
+      newFrontendActionFactory<AppFrontendAction>().get());
 
   return ret;
 }
@@ -900,4 +877,3 @@ int main(int argc, const char **argv) {
   return ret;
 }
 /***********************************************************************************************/
-

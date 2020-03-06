@@ -33,14 +33,14 @@ The makefile assumes clang is called `clang` and llvm-config is called `llvm-con
 make CXX=clang-9.0 LLVM_CONF=llvm-config-9.0
 ```
 
-For windows builds, cygwin builds are supported. Get llvm and clang along with their sources and build like usual.
+For windows builds, cygwin builds are supported. Get llvm and clang along with their sources and build like usual. If you run into problems while bulding on cygwin, you can take a look at the `appveyor.yml` file under the repository root.
 
 ## Usage
 
 A simple usage example:
 
 ```bash
-cgrep -A 1 -B 1 --func --var --regex n[aA]m ./cgrep.cpp
+cgrep -A 1 -B 1 --func --declrefexpr --regex n[aA]m --noclor --nodecl ./cgrep.cpp
 ```
 
 Please do note that the regex will pass through both C++ and the regex engine, so if you would want to escape `\`, the regex you pass as the command line arg would be `\\\\` instead of the normal `\\`.
@@ -57,38 +57,39 @@ Here's an option list, though it might not be necessarily up-to-date.
 For an up-to-date list, you can run `cgrep --help`.
 
 ```bash
-  -A=<int>                    - same as grep, how many lines after the matched line to print
-  -B=<int>                    - same as grep, howm many lines before the matched line to print
-  --all                       - turns on all switches other than nameddecl
-  --awk                       - outputs location in a gawk freidnly format
-  --call                      - match function calls only
-  --class                     - match class declrations only
-  --cxxcall                   - match member function calls only
-  --declrefexpr               - matches declrefexpr
+  -A=<int>                    - Same as grep, how many lines after the matched line to print. Defaults to 0.
+  -B=<int>                    - Same as grep, howm many lines before the matched line to print. Defaults to 0.
+  --all                       - Turns on all switches other than nameddecl.
+  --awk                       - Outputs location in a gawk freidnly format, not meant for human consumption. Defaults to false.
+  --call                      - Match function calls.
+  --class                     - Match class declrations.
+  --cxxcall                   - Match member function calls.
+  --declrefexpr               - Matches declrefexpr.
   --dir=<string>              - recursively goes through all the files and directories. assumes compilation databases are present for all source files.
   --extra-arg=<string>        - Additional argument to append to the compiler command line
   --extra-arg-before=<string> - Additional argument to prepend to the compiler command line
-  --func                      - match functions only
-  --header                    - match headers in header inclusions
-  --macro                     - match macro definitions
-  --mainfile                  - match identifiers in the main file only
-  --memfunc                   - match member functions only
-  --memvar                    - match member variables only
-  --nameddecl                 - matches all named declrations
+  --func                      - Match functions.
+  --header                    - Match headers in header inclusions.
+  --macro                     - Match macro definitions.
+  --mainfile                  - Match identifiers in the main file only. Defaults to true.
+  --memfunc                   - Match member functions.
+  --memvar                    - Match member variables.
+  --nameddecl                 - Matches all named declrations.
+  --nocolor                   - For terminals that don't supprt ANSI escape sequences. The default is to false.
+  --nodecl                    - For switches that are not declarations, don't print declarations. Defaults to false.
   -p=<string>                 - Build path
-  --regex=<string>            - the regex to match against
-  --struct                    - match structures only
-  --syshdr                    - match identifiers in system header as well
-  --union                     - match unions only
-  --var                       - match variables only
+  --regex=<string>            - The regex to match against.
+  --struct                    - Match structures.
+  --syshdr                    - Match identifiers in system header as well. Defaults to true.
+  --union                     - Match unions.
+  --var                       - Match variables.
 ```
 
 `cgrep` is a clang tool, so it will accept all valid clang command line options.
 
 ## Known Issues
 
-* building cgrep with `-j` will not work because bad makefile.
-* the coloring is off right now and doesn't work properly.
+  * building cgrep with `-j` will not work because bad makefile.
 
 ## License
 
