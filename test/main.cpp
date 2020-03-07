@@ -1,8 +1,8 @@
 
 class myClass {
   public:
-    myClass();
-    ~myClass();
+    myClass() = default;
+    ~myClass() {}
 
     void myMehtod1(void) {}
     void myMehtod2(void) {}
@@ -14,6 +14,11 @@ class myClass {
 struct myStruct {
   myStruct();
   ~myStruct();
+};
+
+union myUnion {
+  int a;
+  double b;
 };
 
 void myFunc1(void) {}

@@ -88,6 +88,9 @@ For an up-to-date list, you can run `cgrep --help` or look at the man page.
 
 `cgrep` is a clang tool, so it will accept all valid clang command line options.
 
+## Example
+You can run the coverage report, `make covrep`, to see some examples. Before running make sure to generate the compilation databases for `cgrep.cpp` and `./test/main.cpp`. The paths need to be right for your system. Please note that even though cgrep's source file is small, the actual code itself isn't. cgrep is clang. So cgrep will be relatively slow in the examples since its running on a Very big codebase.
+
 ## Known Issues
 `cgrep` will not print out warnings or errors related to the source code so please make sure that clang can successfully build your file before running cgrep on it.
 

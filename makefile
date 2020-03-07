@@ -132,11 +132,13 @@ $(TARGET)-cov: $(TARGET).ocov ./cfe-extra/cfe_extra.ocov
 	$(CXX) $^ $(LD_FLAGS) $(COV_LD) -o $@
 
 cov: runcov
-	@llvm-profdata merge -sparse ./one.profraw ./two.profraw ./three.profraw ./four.profraw ./five.profraw ./six.profraw ./seven.profraw ./eight.profraw ./nine.profraw -o ./cgrep.profdata
+	@llvm-profdata merge -sparse ./one.profraw ./two.profraw ./three.profraw ./four.profraw ./five.profraw ./six.profraw ./seven.profraw \
+		./eight.profraw ./nine.profraw ./ten.profraw ./eleven.profraw -o ./cgrep.profdata
 	@llvm-cov show $(TARGET)-cov -instr-profile=cgrep.profdata -ignore-filename-regex=llvm clang
 
 covrep: runcov
-	@llvm-profdata merge -sparse ./one.profraw ./two.profraw ./three.profraw ./four.profraw ./five.profraw ./six.profraw ./seven.profraw ./eight.profraw ./nine.profraw -o ./cgrep.profdata
+	@llvm-profdata merge -sparse ./one.profraw ./two.profraw ./three.profraw ./four.profraw ./five.profraw ./six.profraw ./seven.profraw \
+		./eight.profraw ./nine.profraw ./ten.profraw ./eleven.profraw -o ./cgrep.profdata
 	@llvm-cov report $(TARGET)-cov -instr-profile=cgrep.profdata -ignore-filename-regex=llvm -ignore-filename-regex=clang -show-functions cgrep.cpp
 
 ASM:$(ASM_LIST)

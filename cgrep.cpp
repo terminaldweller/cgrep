@@ -158,10 +158,6 @@ static std::string get_line_from_file(SourceManager &SM,
   std::string mainfile_str = MR.SourceManager->getFilename(SR.getBegin()).str();
   mainfile.open(mainfile_str);
   auto linenumber = MR.SourceManager->getSpellingLineNumber(SR.getBegin());
-  //auto columnnumber_start =
-      //MR.SourceManager->getSpellingColumnNumber(SR.getBegin()) - 1;
-  //auto columnnumber_end =
-      //MR.SourceManager->getSpellingColumnNumber(SR.getEnd()) - 1;
 
   std::string line;
   unsigned line_nu = 0;
@@ -267,6 +263,12 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
               if (nullptr != ND) {
                 SourceRange ND_SR = ND->getSourceRange();
                 get_line_from_file(SM, MR, ND_SR);
+              }
+
+              const CallExpr *CE = DTN.get<CallExpr>();
+              if (nullptr != CE) {
+                SourceRange CE_SR = CE->getDirectCallee()->getSourceRange();
+                get_line_from_file(SM, MR, CE_SR);
               }
             }
           } else {
@@ -486,7 +488,10 @@ public:
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         ast_type_traits::DynTypedNode DNode =
             ast_type_traits::DynTypedNode::create(*RD);
-        output_handler(MR, SR, *MR.SourceManager, true, DNode);
+        auto StartLocation = RD->getLocation();
+        auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+        auto Range = SourceRange(StartLocation, EndLocation);
+        output_handler(MR, Range, *MR.SourceManager, true, DNode);
       }
     }
   }
@@ -514,7 +519,10 @@ public:
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         ast_type_traits::DynTypedNode DNode =
             ast_type_traits::DynTypedNode::create(*RD);
-        output_handler(MR, SR, *MR.SourceManager, true, DNode);
+        auto StartLocation = RD->getLocation();
+        auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+        auto Range = SourceRange(StartLocation, EndLocation);
+        output_handler(MR, Range, *MR.SourceManager, true, DNode);
       }
     }
   }
@@ -576,6 +584,9 @@ public:
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         ast_type_traits::DynTypedNode DTN =
             ast_type_traits::DynTypedNode::create(*ND);
+        auto StartLocation = ND->getLocation();
+        auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+        auto Range = SourceRange(StartLocation, EndLocation);
         output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false, DTN);
       }
     }
@@ -607,8 +618,11 @@ public:
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         ast_type_traits::DynTypedNode DTN =
-            ast_type_traits::DynTypedNode::create(*ND);
-        output_handler(MR, SourceRange(SL, SLE), *MR.SourceManager, false, DTN);
+            ast_type_traits::DynTypedNode::create(*CE);
+        auto StartLocation = CE->getExprLoc();
+        auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+        auto Range = SourceRange(StartLocation, EndLocation);
+        output_handler(MR, Range, *MR.SourceManager, false, DTN);
       }
     }
   }
@@ -641,7 +655,10 @@ public:
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
         ast_type_traits::DynTypedNode DNode =
             ast_type_traits::DynTypedNode::create(*CE);
-        output_handler(MR, SR, *MR.SourceManager, true, DNode);
+        auto StartLocation = CE->getExprLoc();
+        auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+        auto Range = SourceRange(StartLocation, EndLocation);
+        output_handler(MR, Range, *MR.SourceManager, false, DNode);
       }
     }
   }
@@ -654,6 +671,11 @@ class PPInclusion : public PPCallbacks {
 public:
   explicit PPInclusion(SourceManager *SM, Rewriter *Rewrite)
       : SM(*SM), Rewrite(*Rewrite) {}
+
+  virtual bool FileNotFound(StringRef FileName, SmallVectorImpl<char>&RecoveryPath) {
+    std::cerr << CC_RED << "Header not found: " << FileName.str() << CC_NORMAL << "\n";
+    exit(1);
+  }
 
   virtual void MacroDefined(const Token &MacroNameTok,
                             const MacroDirective *MD) {
@@ -675,7 +697,9 @@ public:
 
   virtual void MacroExpands(const Token &MacroNameTok,
                             const MacroDefinition &MD, SourceRange Range,
-                            const MacroArgs *Args) {}
+                            const MacroArgs *Args) {
+
+  }
 
 #if __clang_major__ <= 6
   virtual void InclusionDirective(SourceLocation HashLoc,
@@ -693,11 +717,6 @@ public:
                                   const clang::Module *Imported,
                                   SrcMgr::CharacteristicKind FileType) {
 #endif
-    // FIXME-we are not checking whether the header has been found.
-    // this callback will be called when there is a header inclusion directive
-    // in the source file we are running through, not when the header is found.
-    // if the header is not there, we'll be dereferencing a null pointer
-    // somewhere and segfault.
     if (CO_HEADER) {
       CheckSLValidity(HashLoc);
       SourceLocation SL =

@@ -1,7 +1,7 @@
 [
     {
-        "command": "c++ -c -std=c++11 -fpic -o main.o main.cpp", 
-        "directory": "/home/bloodstalker/devi/abbatoir/hole114", 
-        "file": "/home/bloodstalker/devi/abbatoir/hole114/main.cpp"
+        "command": "c++ -c -std=c++11 -fpic -o main.o main.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/main.cpp"
     }
 ]
