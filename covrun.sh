@@ -12,3 +12,4 @@ LLVM_PROFILE_FILE="eight.profraw" "./cgrep-cov" -A 1 -B 1 --cxxcall --call --reg
 LLVM_PROFILE_FILE="nine.profraw" "./cgrep-cov" -A 1 -B 1 --memvar --regex ite ./cgrep.cpp
 LLVM_PROFILE_FILE="ten.profraw" "./cgrep-cov"  --union --regex [Uu]nion ./test/main.cpp
 LLVM_PROFILE_FILE="eleven.profraw" "./cgrep-cov" --struct --regex [sS]truct ./test/main.cpp
+LLVM_PROFILE_FILE="twelve.profraw" "./cgrep-cov" --dir ./ --regex run --func ./cgrep.cpp

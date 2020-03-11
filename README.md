@@ -3,8 +3,6 @@
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/bloodstalker/cgrep.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bloodstalker/cgrep/context:cpp)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/726c70d0e3294f149036fa6134998fe8)](https://www.codacy.com/manual/bloodstalker/cgrep?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bloodstalker/cgrep&amp;utm_campaign=Badge_Grade)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep?ref=badge_shield)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/19431/badge.svg)](https://scan.coverity.com/projects/bloodstalker-cgrep)
-[![Coverage Status](https://coveralls.io/repos/github/bloodstalker/cgrep/badge.svg?branch=master)](https://coveralls.io/github/bloodstalker/cgrep?branch=master)
 [![Gitter](https://badges.gitter.im/mutatortools/community.svg)](https://gitter.im/mutatortools/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # cgrep

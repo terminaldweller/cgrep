@@ -866,21 +866,6 @@ private:
   Rewriter TheRewriter;
 };
 /***********************************************************************************************/
-static ClangTool build_cgrep_instance(int argc, const char **argv) {
-  CommonOptionsParser op(argc, argv, CGrepCat);
-  ClangTool cgrepInstance(op.getCompilations(), op.getSourcePathList());
-
-  return cgrepInstance;
-}
-
-static int run_cgrep_instance(ClangTool cgrepToolInstance) {
-  int ret = cgrepToolInstance.run(
-      newFrontendActionFactory<AppFrontendAction>().get());
-
-  return ret;
-}
-
-/***********************************************************************************************/
 /*Main*/
 int main(int argc, const char **argv) {
   CommonOptionsParser op(argc, argv, CGrepCat);
@@ -888,10 +873,8 @@ int main(int argc, const char **argv) {
       op.getSourcePathList();
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
   int ret = Tool.run(newFrontendActionFactory<AppFrontendAction>().get());
-#if 0
-  if ("" != CO_RECURSIVE) {
-    dig(CO_RECURSIVE, argc, argv);
-  }
+#if 1
+  listDirs(CO_RECURSIVE);
 #endif
   return ret;
 }
