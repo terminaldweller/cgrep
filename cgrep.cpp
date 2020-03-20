@@ -41,13 +41,16 @@ cl::opt<bool> CO_CALL("call", cl::desc("Match function calls."),
 cl::opt<bool> CO_CXXCALL("cxxcall", cl::desc("Match member function calls."),
                          cl::init(false), cl::cat(CGrepCat),
                          cl::Optional); // done
-cl::opt<bool> CO_MEMVAR("memvar", cl::desc("Match member variables."),
+cl::opt<bool> CO_CFIELD("cfield", cl::desc("Match C field declarations."),
                         cl::init(false), cl::cat(CGrepCat),
                         cl::Optional); // done
 cl::opt<bool> CO_CLASS("class", cl::desc("Match class declrations."),
                        cl::init(false), cl::cat(CGrepCat),
                        cl::Optional); // done
 cl::opt<bool> CO_STRUCT("struct", cl::desc("Match structures."),
+                        cl::init(false), cl::cat(CGrepCat),
+                        cl::Optional); // done
+cl::opt<bool> CO_CXXFIELD("cxxfield", cl::desc("Match CXX field member declarations."),
                         cl::init(false), cl::cat(CGrepCat),
                         cl::Optional); // done
 cl::opt<bool> CO_UNION("union", cl::desc("Match unions."), cl::init(false),
@@ -667,6 +670,37 @@ private:
   Rewriter &Rewrite [[maybe_unused]];
 };
 /***********************************************************************************************/
+class RecordFieldHandler : public MatchFinder::MatchCallback {
+  public:
+    explicit RecordFieldHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR) {
+      const FieldDecl *FD = MR.Nodes.getNodeAs<clang::FieldDecl>("recordfielddecl");
+      if (FD) {
+        SourceRange SR = FD->getSourceRange();
+        SourceLocation SL = SR.getBegin();
+        CheckSLValidity(SL);
+        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+        if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+          return void();
+        if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+          return void();
+        std::string name = FD->getNameAsString();
+        if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+          ast_type_traits::DynTypedNode DNode =
+              ast_type_traits::DynTypedNode::create(*FD);
+          auto StartLocation = FD->getLocation();
+          auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+          auto Range = SourceRange(StartLocation, EndLocation);
+          output_handler(MR, Range, *MR.SourceManager, true, DNode);
+        }
+      }
+    }
+
+private:
+  Rewriter &Rewrite [[maybe_unused]];
+};
+/***********************************************************************************************/
 class PPInclusion : public PPCallbacks {
 public:
   explicit PPInclusion(SourceManager *SM, Rewriter *Rewrite)
@@ -756,8 +790,8 @@ public:
       : HandlerForVar(R), HandlerForClass(R), HandlerForCalledFunc(R),
         HandlerForCXXMethod(R), HandlerForField(R), HandlerForStruct(R),
         HandlerForUnion(R), HandlerForNamedDecl(R), HandlerForDeclRefExpr(R),
-        HandlerForCallExpr(R), HandlerForCXXCallExpr(R) {
-#if 1
+        HandlerForCallExpr(R), HandlerForCXXCallExpr(R), 
+        HandlerForRecordField(R) {
     if (CO_FUNCTION || CO_ALL) {
       Matcher.addMatcher(functionDecl().bind("funcdecl"),
                          &HandlerForCalledFunc);
@@ -782,7 +816,7 @@ public:
       Matcher.addMatcher(cxxMethodDecl().bind("cxxmethoddecl"),
                          &HandlerForCXXMethod);
     }
-    if (CO_MEMVAR || CO_ALL) {
+    if (CO_CFIELD || CO_ALL) {
       Matcher.addMatcher(fieldDecl().bind("fielddecl"), &HandlerForField);
     }
     if (CO_STRUCT || CO_ALL) {
@@ -808,7 +842,9 @@ public:
       Matcher.addMatcher(cxxMemberCallExpr().bind("cxxcallexpr"),
                          &HandlerForCXXCallExpr);
     }
-#endif
+    if (CO_CXXFIELD || CO_ALL) {
+      Matcher.addMatcher(fieldDecl(hasParent(cxxRecordDecl())).bind("recordfielddecl"), &HandlerForRecordField);
+    }
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -827,13 +863,14 @@ private:
   DeclRefExprHandler HandlerForDeclRefExpr;
   CallExprHandler HandlerForCallExpr;
   CXXCallExprHandler HandlerForCXXCallExpr;
+  RecordFieldHandler HandlerForRecordField;
   MatchFinder Matcher;
 };
 /***********************************************************************************************/
-class AppFrontendAction : public ASTFrontendAction {
+class CgrepFrontendAction : public ASTFrontendAction {
 public:
-  AppFrontendAction() {}
-  ~AppFrontendAction() { delete BDCProto; }
+  CgrepFrontendAction() {}
+  ~CgrepFrontendAction() { delete BDCProto; }
 
   void EndSourceFileAction() override {
     std::error_code EC;
@@ -872,8 +909,8 @@ int main(int argc, const char **argv) {
   const std::vector<std::string> &SourcePathList [[maybe_unused]] =
       op.getSourcePathList();
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
-  int ret = Tool.run(newFrontendActionFactory<AppFrontendAction>().get());
-#if 1
+  int ret = Tool.run(newFrontendActionFactory<CgrepFrontendAction>().get());
+#if 0
   listDirs(CO_RECURSIVE);
 #endif
   return ret;

@@ -19,6 +19,13 @@ struct myStruct {
 union myUnion {
   int a;
   double b;
+  int app;
+};
+
+struct verymuchStruct {
+  int myinteger;
+  int yourinteger;
+  int ourinteger;
 };
 
 void myFunc1(void) {}
