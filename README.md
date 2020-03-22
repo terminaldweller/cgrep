@@ -36,16 +36,24 @@ For windows builds, cygwin builds are supported. Get llvm and clang along with t
 A simple usage example:
 
 ```bash
-cgrep -A 1 -B 1 --func --declrefexpr --regex n[aA]m --noclor --nodecl ./cgrep.cpp
+cgrep -A 1 -B 1 --func --declrefexpr --regex n[aA]m --nocolor --nodecl ./myawesomecode.cpp
 ```
 
-Please do note that the regex will pass through both C++ and the regex engine, so if you would want to escape `\`, the regex you pass as the command line arg would be `\\\\` instead of the normal `\\`.
-In order for cgrep to work, you need to have a compilation database, tools like `cmake` can generate one for you.
+In order for cgrep to work, you need to have a compilation database, tools like `cmake` can generate one for you.<br/>
+You can, by all means, run cgrep without a compilation databse but whether that works or not really depends on your source file. Can you build your source file with clang without passing it any options?
+If the answer to that is yes, then you can just run cgrep without a compilation databse like so:<br/>
+```bash
+cgrep -A 1 -B 1 --func --declrefexpr --regex n[aA]m --nocolor --nodecl ./myawesomecode.cpp --
+```
+Otherwise you need a compilation database.<br/>
+
+Please do note that the regex will pass through both C++ and the regex engine, so if you would want to escape `\`, the regex you pass as the command line arg would be `\\\\` instead of the normal `\\`.<br/>
 If your build tool doesn't do that, you can just use [bear](https://github.com/rizsotto/Bear) or [scan-build](https://github.com/rizsotto/scan-build).
 You can also skip the compilation database altogether passing cgrep `--` after the input file name which means you have chosen not to pass it anything.
 You can pass the options by hand since cgrep is a Clang instance so it recognizes every option clang has.
 
 cgrep uses ANSI escape sequences for colors so your terminal should support those. In case your terminal does not support ANSI escape sequences, you can silence those using the `--nocolor` option.
+
 By default, cgrep will print out the declaration location for a match. In case you don't want those in the output, you can pass cgrep the `--nodecl` switch.
 
 You can use `--extra-arg==--std=` to tell cgrep which C-family language the source file is supposed to be in.

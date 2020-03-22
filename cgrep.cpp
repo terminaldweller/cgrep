@@ -576,10 +576,10 @@ public:
       const NamedDecl *ND = DRE->getFoundDecl();
       std::string name = ND->getNameAsString();
       SourceLocation SL = DRE->DEVI_GETLOCSTART();
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       SourceLocation SLE = SL.getLocWithOffset(name.length() - 1);
       // SourceLocation SLE = DRE->DEVI_GETLOCEND();
       CheckSLValidity(SL);
-      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
       if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
         return void();
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
