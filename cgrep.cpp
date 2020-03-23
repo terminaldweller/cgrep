@@ -869,11 +869,9 @@ private:
 /*Main*/
 int main(int argc, const char **argv) {
   CommonOptionsParser op(argc, argv, CGrepCat);
-  const std::vector<std::string> &SourcePathList [[maybe_unused]] =
-      op.getSourcePathList();
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
   int ret = Tool.run(newFrontendActionFactory<AppFrontendAction>().get());
-#if 1
+#if 0
   listDirs(CO_RECURSIVE);
 #endif
   return ret;

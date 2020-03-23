@@ -175,6 +175,9 @@ valgrind: $(TARGET)
 format:
 	- clang-format -i $(SRCS) $(HDRS)
 
+install: $(TARGET)
+	ln -s ./$(TARGET) /usr/local/bin/
+
 clean:
 	rm -f *.o *.dis *.odbg *.ocov *~ $(TARGET) $(TARGET).so $(TARGET)-static $(TARGET)-dbg $(TARGET).a $(TARGET)-cov
 
