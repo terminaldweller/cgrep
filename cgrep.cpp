@@ -7,7 +7,6 @@
  * */
 /***********************************************************************************************/
 /*included modules*/
-#include "./cfe-extra/cfe_extra.h"
 #include "./pch.hpp"
 /***********************************************************************************************/
 /*used namespaces*/
@@ -16,7 +15,6 @@ using namespace clang;
 using namespace clang::ast_matchers;
 using namespace clang::driver;
 using namespace clang::tooling;
-// using namespace boost::filesystem;
 /***********************************************************************************************/
 namespace {
 static llvm::cl::OptionCategory CGrepCat("cgrep options");
@@ -56,6 +54,9 @@ cl::opt<bool> CO_CXXFIELD("cxxfield", cl::desc("Match CXX field member declarati
 cl::opt<bool> CO_UNION("union", cl::desc("Match unions."), cl::init(false),
                        cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_MACRO("macro", cl::desc("Match macro definitions."),
+                       cl::init(false), cl::cat(CGrepCat),
+                       cl::Optional); // done
+cl::opt<bool> CO_CLANGDIAG("clangdiag", cl::desc("use clang's diagnostic consumer instead of the one that cgrep provide."),
                        cl::init(false), cl::cat(CGrepCat),
                        cl::Optional); // done
 cl::opt<bool> CO_HEADER("header",
@@ -776,12 +777,29 @@ private:
 /***********************************************************************************************/
 /// @brief A Clang Diagnostic Consumer that does nothing since we don't want
 /// clang to print out diag info.
-class BlankDiagConsumer : public clang::DiagnosticConsumer {
+class CgrepDiagConsumer : public clang::DiagnosticConsumer {
 public:
-  BlankDiagConsumer() = default;
-  virtual ~BlankDiagConsumer() {}
+  CgrepDiagConsumer() = default;
+  virtual ~CgrepDiagConsumer() {}
   virtual void HandleDiagnostic(DiagnosticsEngine::Level DiagLevel,
-                                const Diagnostic &Info) override {}
+                                const Diagnostic &Info) override {
+    if ((clang::DiagnosticsEngine::Level::Error == DiagLevel)
+        || (clang::DiagnosticsEngine::Level::Fatal == DiagLevel)) {
+      SmallVector<char, 16> OutStr;
+      Info.FormatDiagnostic(OutStr);
+      std::cout << "Error:";
+      for (auto &iter : OutStr) std::cout << iter;
+      ArrayRef<CharSourceRange> SourceRanges = Info.getRanges();
+      for (auto &iter : SourceRanges) {
+        if (Info.hasSourceManager()) {
+          std::cout << iter.getBegin().printToString(Info.getSourceManager()) << 
+            ":" << iter.getEnd().printToString(Info.getSourceManager()) << "\n";
+        }
+      }
+      ArrayRef<FixItHint> FixItHints [[maybe_unused]] = Info.getFixItHints();
+      std::cout << "\n";
+    }
+  }
 };
 /***********************************************************************************************/
 class CgrepASTConsumer : public ASTConsumer {
@@ -790,7 +808,7 @@ public:
       : HandlerForVar(R), HandlerForClass(R), HandlerForCalledFunc(R),
         HandlerForCXXMethod(R), HandlerForField(R), HandlerForStruct(R),
         HandlerForUnion(R), HandlerForNamedDecl(R), HandlerForDeclRefExpr(R),
-        HandlerForCallExpr(R), HandlerForCXXCallExpr(R), 
+        HandlerForCallExpr(R), HandlerForCXXCallExpr(R),
         HandlerForRecordField(R) {
     if (CO_FUNCTION || CO_ALL) {
       Matcher.addMatcher(functionDecl().bind("funcdecl"),
@@ -887,8 +905,10 @@ public:
     CI.getPreprocessor().addPPCallbacks(
         std::make_unique<PPInclusion>(&CI.getSourceManager(), &TheRewriter));
 #endif
-    DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
-    DE.setClient(BDCProto, false);
+    if (!CO_CLANGDIAG) {
+      DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
+      DE.setClient(BDCProto, false);
+    }
     TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
 #if __clang_major__ <= 9
     return llvm::make_unique<CgrepASTConsumer>(TheRewriter);
@@ -899,7 +919,7 @@ public:
   }
 
 private:
-  BlankDiagConsumer *BDCProto = new BlankDiagConsumer;
+  CgrepDiagConsumer *BDCProto = new CgrepDiagConsumer;
   Rewriter TheRewriter;
 };
 /***********************************************************************************************/
@@ -908,9 +928,6 @@ int main(int argc, const char **argv) {
   CommonOptionsParser op(argc, argv, CGrepCat);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
   int ret = Tool.run(newFrontendActionFactory<CgrepFrontendAction>().get());
-#if 0
-  listDirs(CO_RECURSIVE);
-#endif
   return ret;
 }
 /***********************************************************************************************/

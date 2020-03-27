@@ -134,3 +134,21 @@ matrix:
         - make CXX=clang-10 LLVM_CONF=llvm-config-10
       after_success:
         bash run.sh
+    - dist: bionic
+      name: llvm11
+      sudo: required
+      language: cpp
+      before_script:
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update -y
+      - sudo apt-get install libstdc++-7-dev -y
+      - sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+      - sudo add-apt-repository "deb http://apt.llvm.org/bionic/   llvm-toolchain-bionic-10  main"
+      - sudo apt-get update
+      - sudo apt-get install clang-11 llvm-11-dev libclang-common-11-dev libclang-11-dev libboost-system-dev libboost-filesystem-dev -y
+      - git submodule init
+      - git submodule update
+      script:
+        - make CXX=clang-11 LLVM_CONF=llvm-config-11
+      after_success:
+        bash run.sh
