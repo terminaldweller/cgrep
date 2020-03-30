@@ -11,7 +11,6 @@
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Support/raw_ostream.h"
-#include <boost/filesystem.hpp>
 #include <cassert>
 #include <cstdlib>
 #include <dirent.h>

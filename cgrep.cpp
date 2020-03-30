@@ -689,13 +689,10 @@ public:
   explicit TraceVarHandlerSub(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
-    std::cout << "called\n";
     const DeclRefExpr *DRE =
         MR.Nodes.getNodeAs<clang::DeclRefExpr>("tracevardeclrefexpr");
     if (DRE) {
       if (DRE->getFoundDecl() == ND) {
-        std::cout << "DRE:" << std::hex << DRE->getFoundDecl() << "\n";
-        std::cout << "ND:" << std::hex << ND << "\n";
         std::cout << DRE->getLocation().printToString(*(MR.SourceManager))
                   << "\n";
       }
@@ -715,11 +712,8 @@ class TraceVarHandler : public MatchFinder::MatchCallback {
 public:
   explicit TraceVarHandler(Rewriter &Rewrite)
       : Rewrite(Rewrite), SubMatcher(Rewrite) {}
-  ~TraceVarHandler() {
-    std::cout << "Destroy\n";
-  }
 
-  virtual void run(const MatchFinder::MatchResult &MR) {
+  virtual void run(const MatchFinder::MatchResult &MR) override {
     const VarDecl *VD = MR.Nodes.getNodeAs<clang::VarDecl>("tracevar");
     if (VD) {
       SourceRange SR = VD->getSourceRange();
@@ -739,6 +733,7 @@ public:
       }
     }
   }
+
 
 private:
   MatchFinder Matcher;
