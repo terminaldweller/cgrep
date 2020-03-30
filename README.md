@@ -19,7 +19,7 @@ and it will match your regex against all function declarations, and will output 
 
 `cgrep` is implemented using Clang's libtooling libraries.
 
-### Features
+## Features
 
 * It's basically Clang regexing it's way through your C-family source-code. You have all the context you can ever need.
 * Can output whether to print the declaration of a match even if the match itself is not a declaration along with the matched result.

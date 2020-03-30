@@ -25,7 +25,11 @@ cl::opt<std::string> CO_RECURSIVE(
     cl::init(""), cl::cat(CGrepCat), cl::Optional);
 cl::opt<std::string> CO_REGEX("regex", cl::desc("The regex to match against."),
                               cl::init(""), cl::cat(CGrepCat),
-                              cl::Required); // done
+                              cl::Optional); // done
+cl::opt<std::string>
+    CO_TRACE("trace", cl::desc("The variable that's going to be traced"),
+             cl::init(""), cl::cat(CGrepCat),
+             cl::Optional); // done
 cl::opt<bool> CO_FUNCTION("func", cl::desc("Match functions."), cl::init(false),
                           cl::cat(CGrepCat),
                           cl::Optional); // done
@@ -48,17 +52,20 @@ cl::opt<bool> CO_CLASS("class", cl::desc("Match class declrations."),
 cl::opt<bool> CO_STRUCT("struct", cl::desc("Match structures."),
                         cl::init(false), cl::cat(CGrepCat),
                         cl::Optional); // done
-cl::opt<bool> CO_CXXFIELD("cxxfield", cl::desc("Match CXX field member declarations."),
-                        cl::init(false), cl::cat(CGrepCat),
-                        cl::Optional); // done
+cl::opt<bool> CO_CXXFIELD("cxxfield",
+                          cl::desc("Match CXX field member declarations."),
+                          cl::init(false), cl::cat(CGrepCat),
+                          cl::Optional); // done
 cl::opt<bool> CO_UNION("union", cl::desc("Match unions."), cl::init(false),
                        cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_MACRO("macro", cl::desc("Match macro definitions."),
                        cl::init(false), cl::cat(CGrepCat),
                        cl::Optional); // done
-cl::opt<bool> CO_CLANGDIAG("clangdiag", cl::desc("use clang's diagnostic consumer instead of the one that cgrep provide."),
-                       cl::init(false), cl::cat(CGrepCat),
-                       cl::Optional); // done
+cl::opt<bool> CO_CLANGDIAG("clangdiag",
+                           cl::desc("use clang's diagnostic consumer instead "
+                                    "of the one that cgrep provide."),
+                           cl::init(false), cl::cat(CGrepCat),
+                           cl::Optional); // done
 cl::opt<bool> CO_HEADER("header",
                         cl::desc("Match headers in header inclusions."),
                         cl::init(false), cl::cat(CGrepCat),
@@ -149,10 +156,6 @@ cl::opt<int> CO_B("B",
 #define CC_NORMAL (CO_NOCOLOR == true ? "" : NORMAL)
 #define CC_CLEAR (CO_NOCOLOR == true ? "" : CLEAR)
 /***********************************************************************************************/
-// forwartd declarations
-static ClangTool build_cgrep_instance(int argc, const char **argv);
-static int run_cgrep_instance(ClangTool cgrepToolInstance);
-/***********************************************************************************************/
 static std::string get_line_from_file(SourceManager &SM,
                                       const MatchFinder::MatchResult &MR,
                                       SourceRange SR) {
@@ -178,25 +181,6 @@ static std::string get_line_from_file(SourceManager &SM,
 
   return Result;
 }
-
-/**
- * @brief recursively goes through all the directories starting from path
- *
- * @param path
- */
-#if 0
-static void dig(boost::filesystem::path dir, int argc, const char** argv) {
-  //just to be compatible with old gcc versions
-  //for (const auto &entry : boost::filesystem::directory_iterator(dir)) {
-  for (boost::filesystem::path::iterator entry = dir.begin(); entry != dir.end(); ++entry ) {
-    if (true == is_directory(*entry)) {
-      auto cgrepInstance = build_cgrep_instance(argc, argv);
-      run_cgrep_instance(cgrepInstance);
-      dig((*entry).path(), argc, argv);
-    }
-  }
-}
-#endif
 
 /**
  * @brief does some preprocessing on the regex string we get as input
@@ -259,10 +243,7 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
             }
           }
           if (!CO_NODECL) {
-            if (isdecl) {
-              std::cout << CC_GREEN << "\t<---declared here" << CC_NORMAL
-                        << "\n";
-            } else {
+            if (!isdecl) {
               const NamedDecl *ND = DTN.get<NamedDecl>();
               if (nullptr != ND) {
                 SourceRange ND_SR = ND->getSourceRange();
@@ -672,34 +653,97 @@ private:
 };
 /***********************************************************************************************/
 class RecordFieldHandler : public MatchFinder::MatchCallback {
-  public:
-    explicit RecordFieldHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+public:
+  explicit RecordFieldHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-    virtual void run(const MatchFinder::MatchResult &MR) {
-      const FieldDecl *FD = MR.Nodes.getNodeAs<clang::FieldDecl>("recordfielddecl");
-      if (FD) {
-        SourceRange SR = FD->getSourceRange();
-        SourceLocation SL = SR.getBegin();
-        CheckSLValidity(SL);
-        SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
-        if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
-          return void();
-        if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
-          return void();
-        std::string name = FD->getNameAsString();
-        if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-          ast_type_traits::DynTypedNode DNode =
-              ast_type_traits::DynTypedNode::create(*FD);
-          auto StartLocation = FD->getLocation();
-          auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
-          auto Range = SourceRange(StartLocation, EndLocation);
-          output_handler(MR, Range, *MR.SourceManager, true, DNode);
-        }
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    const FieldDecl *FD =
+        MR.Nodes.getNodeAs<clang::FieldDecl>("recordfielddecl");
+    if (FD) {
+      SourceRange SR = FD->getSourceRange();
+      SourceLocation SL = SR.getBegin();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
+      std::string name = FD->getNameAsString();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        ast_type_traits::DynTypedNode DNode =
+            ast_type_traits::DynTypedNode::create(*FD);
+        auto StartLocation = FD->getLocation();
+        auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+        auto Range = SourceRange(StartLocation, EndLocation);
+        output_handler(MR, Range, *MR.SourceManager, true, DNode);
       }
     }
+  }
 
 private:
   Rewriter &Rewrite [[maybe_unused]];
+};
+/***********************************************************************************************/
+class TraceVarHandlerSub : public MatchFinder::MatchCallback {
+public:
+  explicit TraceVarHandlerSub(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    std::cout << "called\n";
+    const DeclRefExpr *DRE =
+        MR.Nodes.getNodeAs<clang::DeclRefExpr>("tracevardeclrefexpr");
+    if (DRE) {
+      if (DRE->getFoundDecl() == ND) {
+        std::cout << "DRE:" << std::hex << DRE->getFoundDecl() << "\n";
+        std::cout << "ND:" << std::hex << ND << "\n";
+        std::cout << DRE->getLocation().printToString(*(MR.SourceManager))
+                  << "\n";
+      }
+    }
+  }
+
+  void setND(NamedDecl const * Original_Declaration) {
+    ND = Original_Declaration;
+  }
+
+private:
+  Rewriter &Rewrite [[maybe_unused]];
+  NamedDecl const *ND;
+};
+/***********************************************************************************************/
+class TraceVarHandler : public MatchFinder::MatchCallback {
+public:
+  explicit TraceVarHandler(Rewriter &Rewrite)
+      : Rewrite(Rewrite), SubMatcher(Rewrite) {}
+  ~TraceVarHandler() {
+    std::cout << "Destroy\n";
+  }
+
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    const VarDecl *VD = MR.Nodes.getNodeAs<clang::VarDecl>("tracevar");
+    if (VD) {
+      SourceRange SR = VD->getSourceRange();
+      SourceLocation SL = SR.getBegin();
+      CheckSLValidity(SL);
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
+      auto NameRef = VD->getName();
+      if (!NameRef.empty()) {
+        SubMatcher.setND(VD->getCanonicalDecl()->getUnderlyingDecl());
+        Matcher.addMatcher(declRefExpr(to(varDecl(hasName(VD->getName()))))
+                               .bind("tracevardeclrefexpr"),
+                           &SubMatcher);
+        Matcher.matchAST(*(MR.Context));
+      }
+    }
+  }
+
+private:
+  MatchFinder Matcher;
+  Rewriter &Rewrite [[maybe_unused]];
+  TraceVarHandlerSub SubMatcher;
 };
 /***********************************************************************************************/
 class PPInclusion : public PPCallbacks {
@@ -707,8 +751,10 @@ public:
   explicit PPInclusion(SourceManager *SM, Rewriter *Rewrite)
       : SM(*SM), Rewrite(*Rewrite) {}
 
-  virtual bool FileNotFound(StringRef FileName, SmallVectorImpl<char>&RecoveryPath) {
-    std::cerr << CC_RED << "Header not found: " << FileName.str() << CC_NORMAL << "\n";
+  virtual bool FileNotFound(StringRef FileName,
+                            SmallVectorImpl<char> &RecoveryPath) {
+    std::cerr << CC_RED << "Header not found: " << FileName.str() << CC_NORMAL
+              << "\n";
     exit(1);
   }
 
@@ -732,9 +778,7 @@ public:
 
   virtual void MacroExpands(const Token &MacroNameTok,
                             const MacroDefinition &MD, SourceRange Range,
-                            const MacroArgs *Args) {
-
-  }
+                            const MacroArgs *Args) {}
 
 #if __clang_major__ <= 6
   virtual void InclusionDirective(SourceLocation HashLoc,
@@ -775,31 +819,47 @@ private:
   Rewriter &Rewrite [[maybe_unused]];
 };
 /***********************************************************************************************/
-/// @brief A Clang Diagnostic Consumer that does nothing since we don't want
-/// clang to print out diag info.
 class CgrepDiagConsumer : public clang::DiagnosticConsumer {
 public:
   CgrepDiagConsumer() = default;
   virtual ~CgrepDiagConsumer() {}
   virtual void HandleDiagnostic(DiagnosticsEngine::Level DiagLevel,
                                 const Diagnostic &Info) override {
-    if ((clang::DiagnosticsEngine::Level::Error == DiagLevel)
-        || (clang::DiagnosticsEngine::Level::Fatal == DiagLevel)) {
+    if ((clang::DiagnosticsEngine::Level::Error == DiagLevel) ||
+        (clang::DiagnosticsEngine::Level::Fatal == DiagLevel)) {
       SmallVector<char, 16> OutStr;
       Info.FormatDiagnostic(OutStr);
       std::cout << "Error:";
-      for (auto &iter : OutStr) std::cout << iter;
+      for (auto &iter : OutStr)
+        std::cout << iter;
       ArrayRef<CharSourceRange> SourceRanges = Info.getRanges();
       for (auto &iter : SourceRanges) {
         if (Info.hasSourceManager()) {
-          std::cout << iter.getBegin().printToString(Info.getSourceManager()) << 
-            ":" << iter.getEnd().printToString(Info.getSourceManager()) << "\n";
+          std::cout << iter.getBegin().printToString(Info.getSourceManager())
+                    << ":"
+                    << iter.getEnd().printToString(Info.getSourceManager())
+                    << "\n";
         }
       }
       ArrayRef<FixItHint> FixItHints [[maybe_unused]] = Info.getFixItHints();
       std::cout << "\n";
     }
   }
+};
+/***********************************************************************************************/
+class TraceASTConsumer : public ASTConsumer {
+public:
+  explicit TraceASTConsumer(Rewriter &R) : HandlerForTraceVar(R) {
+    Matcher.addMatcher(varDecl().bind("tracevar"), &HandlerForTraceVar);
+  }
+
+  void HandleTranslationUnit(ASTContext &Context) override {
+    Matcher.matchAST(Context);
+  }
+
+private:
+  TraceVarHandler HandlerForTraceVar;
+  MatchFinder Matcher;
 };
 /***********************************************************************************************/
 class CgrepASTConsumer : public ASTConsumer {
@@ -861,7 +921,9 @@ public:
                          &HandlerForCXXCallExpr);
     }
     if (CO_CXXFIELD || CO_ALL) {
-      Matcher.addMatcher(fieldDecl(hasParent(cxxRecordDecl())).bind("recordfielddecl"), &HandlerForRecordField);
+      Matcher.addMatcher(
+          fieldDecl(hasParent(cxxRecordDecl())).bind("recordfielddecl"),
+          &HandlerForRecordField);
     }
   }
 
@@ -885,15 +947,37 @@ private:
   MatchFinder Matcher;
 };
 /***********************************************************************************************/
+class TraceFrontendAction : public ASTFrontendAction {
+public:
+  TraceFrontendAction() {}
+  ~TraceFrontendAction() {}
+
+  std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI,
+                                                 StringRef file) override {
+    if (!CO_CLANGDIAG) {
+      DiagnosticsEngine &DE = CI.getPreprocessor().getDiagnostics();
+      DE.setClient(BDCProto, false);
+    }
+    TheRewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
+#if __clang_major__ <= 9
+    return llvm::make_unique<TraceASTConsumer>(TheRewriter);
+#endif
+#if __clang_major__ >= 10
+    return std::make_unique<TraceASTConsumer>(TheRewriter);
+#endif
+  }
+
+private:
+  CgrepDiagConsumer *BDCProto = new CgrepDiagConsumer;
+  Rewriter TheRewriter;
+};
+/***********************************************************************************************/
 class CgrepFrontendAction : public ASTFrontendAction {
 public:
   CgrepFrontendAction() {}
   ~CgrepFrontendAction() { delete BDCProto; }
 
-  void EndSourceFileAction() override {
-    std::error_code EC;
-    // TheRewriter.getEditBuffer(TheRewriter.getSourceMgr().getMainFileID()).write(llvm::outs());
-  }
+  void EndSourceFileAction() override { std::error_code EC; }
 
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI,
                                                  StringRef file) override {
@@ -927,7 +1011,14 @@ private:
 int main(int argc, const char **argv) {
   CommonOptionsParser op(argc, argv, CGrepCat);
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
-  int ret = Tool.run(newFrontendActionFactory<CgrepFrontendAction>().get());
+  int ret = 0;
+
+  if ("" != CO_TRACE) {
+    ret = Tool.run(newFrontendActionFactory<TraceFrontendAction>().get());
+  } else {
+    ret = Tool.run(newFrontendActionFactory<CgrepFrontendAction>().get());
+  }
+
   return ret;
 }
 /***********************************************************************************************/
