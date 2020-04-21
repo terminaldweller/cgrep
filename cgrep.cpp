@@ -7,7 +7,27 @@
  * */
 /***********************************************************************************************/
 /*included modules*/
-#include "./pch.hpp"
+#include "./cfe-extra/cfe_extra.h"
+#include "clang/AST/AST.h"
+#include "clang/AST/ASTConsumer.h"
+#include "clang/ASTMatchers/ASTMatchFinder.h"
+#include "clang/ASTMatchers/ASTMatchers.h"
+#include "clang/Basic/LLVM.h"
+#include "clang/Frontend/CompilerInstance.h"
+#include "clang/Frontend/FrontendActions.h"
+#include "clang/Lex/Lexer.h"
+#include "clang/Rewrite/Core/Rewriter.h"
+#include "clang/Tooling/CommonOptionsParser.h"
+#include "clang/Tooling/Tooling.h"
+#include "llvm/Support/raw_ostream.h"
+#include <cassert>
+#include <cstdlib>
+#include <dirent.h>
+#include <fstream>
+#include <iostream>
+#include <regex>
+#include <string>
+#include <vector>
 /***********************************************************************************************/
 /*used namespaces*/
 using namespace llvm;
@@ -205,7 +225,7 @@ bool regex_handler(std::string rx_str, std::string identifier_name) {
  * @param SR source range for the matched result
  * @param SM sourcemanager
  * @param isdecl is the matched result a delaration
- * @param DTN the matched result cast to dynamically typed node
+ * @param DTN the matched result cast to a dynamically typed node
  */
 void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
                     SourceManager &SM, bool isdecl,
@@ -724,7 +744,7 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
         return void();
       auto NameRef = VD->getName();
-      if (!NameRef.empty()) {
+      if (CO_TRACE == NameRef.str()) {
         SubMatcher.setND(VD->getCanonicalDecl()->getUnderlyingDecl());
         Matcher.addMatcher(declRefExpr(to(varDecl(hasName(VD->getName()))))
                                .bind("tracevardeclrefexpr"),
@@ -739,6 +759,29 @@ private:
   MatchFinder Matcher;
   Rewriter &Rewrite [[maybe_unused]];
   TraceVarHandlerSub SubMatcher;
+};
+/***********************************************************************************************/
+class SubDynamicMatcher : public MatchFinder::MatchCallback {
+  public:
+    explicit SubDynamicMatcher(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+    virtual void run(const MatchFinder::MatchResult &MR) override {}
+
+  private:
+    MatchFinder Matcher;
+    Rewriter &Rewrite [[maybe_unused]];
+};
+/***********************************************************************************************/
+class DynamicMatcher : public MatchFinder::MatchCallback {
+  public:
+    explicit DynamicMatcher(Rewriter &Rewrite) : Rewrite(Rewrite), SubDynamicHandler(Rewrite)  {}
+
+    virtual void run(const MatchFinder::MatchResult &MR) override {}
+
+  private:
+    MatchFinder Matcher;
+    Rewriter &Rewrite [[maybe_unused]];
+    SubDynamicMatcher SubDynamicHandler;
 };
 /***********************************************************************************************/
 class PPInclusion : public PPCallbacks {
@@ -854,6 +897,20 @@ public:
 
 private:
   TraceVarHandler HandlerForTraceVar;
+  MatchFinder Matcher;
+};
+/***********************************************************************************************/
+class DynamicASTConsumer : public ASTConsumer {
+public:
+  explicit DynamicASTConsumer(Rewriter &R) : DynamicHandler(R) {
+  }
+
+  void HandleTranslationUnit(ASTContext &Context) override {
+    Matcher.matchAST(Context);
+  }
+
+private:
+  DynamicMatcher DynamicHandler;
   MatchFinder Matcher;
 };
 /***********************************************************************************************/

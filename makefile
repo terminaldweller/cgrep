@@ -84,7 +84,7 @@ LD_FLAGS+=$(EXTRA_LD_FLAGS)
 
 .PHONY:all clean help ASM SO TAGS
 
-all: pch.hpp.gch $(TARGET)
+all: $(TARGET)
 
 everything:$(TARGET) A ASM SO $(TARGET)-dbg TAGS $(TARGET)-cov
 
@@ -98,17 +98,14 @@ depend:.depend
 
 -include ./.depend
 
-%.o:%.cpp pch.hpp.gch
-	$(CXX) -include-pch pch.hpp.gch $(CXX_FLAGS) -c $< -o $@
+%.o:%.cpp
+	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 %.odbg:%.cpp
 	$(CXX) $(CXX_FLAGS) -g -c $< -o $@
 
-%.ocov:%.cpp pch.hpp.gch
+%.ocov:%.cpp
 	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
-
-pch.hpp.gch: pch.hpp
-	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 ./cfe-extra/cfe_extra.o:./cfe-extra/cfe_extra.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@

@@ -1,7 +1,12 @@
 [
     {
-        "command": "c++ -c -include-pch pch.hpp.gch -fpic -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -std=c++14 -fno-exceptions -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -std=c++17 -fexceptions -o cgrep.o cgrep.cpp",
+        "command": "c++ -c -fpic -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -std=c++14 -fno-exceptions -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -std=c++17 -fexceptions -o cgrep.o cgrep.cpp",
         "directory": "/home/bloodstalker/extra/cgrep",
         "file": "/home/bloodstalker/extra/cgrep/cgrep.cpp"
+    },
+    {
+        "command": "c++ -c -fpic -I/home/bloodstalker/extra/llvm-clang-4/llvm/include -I/home/bloodstalker/extra/llvm-clang-4/build/include -std=c++14 -fno-exceptions -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/home/bloodstalker/extra/llvm-clang-4/llvm/tools/clang/include -I/home/bloodstalker/extra/llvm-clang-4/build/tools/clang/include -std=c++17 -fexceptions -o cfe-extra/cfe_extra.o cfe-extra/cfe_extra.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep",
+        "file": "/home/bloodstalker/extra/cgrep/cfe-extra/cfe_extra.cpp"
     }
 ]

@@ -21,9 +21,9 @@ and it will match your regex against all function declarations, and will output 
 
 ## Features
 
-* It's basically Clang regexing it's way through your C-family source-code. You have all the context you can ever need.
-* Can output whether to print the declaration of a match even if the match itself is not a declaration along with the matched result.
-* Can output matches in a script-friendly format which could be used in turn by a secondary script.
+  * It's basically Clang regexing it's way through your C-family source-code. You have all the context you can ever need.
+  * Can output whether to print the declaration of a match even if the match itself is not a declaration along with the matched result.
+  * Can output matches in a script-friendly format which could be used in turn by a secondary script.
 
 ### Will cgrep try to implement all of the grep switches?
 The answer is no. The main distinction is that `cgrep` is only meant to work on C-family source files not text files. Most of `grep`'s switches don't apply to the usecase or provide almost no benefits at all.<br/>
