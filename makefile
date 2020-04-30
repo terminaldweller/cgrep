@@ -11,7 +11,7 @@ endif
 CXX=clang++
 CXX?=clang++
 ifdef OS
-	CXX_FLAGS=-MM
+	CXX_FLAGS=
 else
 	CXX_FLAGS=-fpic
 endif
