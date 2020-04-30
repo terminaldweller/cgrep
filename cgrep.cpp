@@ -7,27 +7,7 @@
  * */
 /***********************************************************************************************/
 /*included modules*/
-#include "./cfe-extra/cfe_extra.h"
-#include "clang/AST/AST.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/ASTMatchers/ASTMatchFinder.h"
-#include "clang/ASTMatchers/ASTMatchers.h"
-#include "clang/Basic/LLVM.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/FrontendActions.h"
-#include "clang/Lex/Lexer.h"
-#include "clang/Rewrite/Core/Rewriter.h"
-#include "clang/Tooling/CommonOptionsParser.h"
-#include "clang/Tooling/Tooling.h"
-#include "llvm/Support/raw_ostream.h"
-#include <cassert>
-#include <cstdlib>
-#include <dirent.h>
-#include <fstream>
-#include <iostream>
-#include <regex>
-#include <string>
-#include <vector>
+#include "pch.hpp"
 /***********************************************************************************************/
 /*used namespaces*/
 using namespace llvm;
@@ -209,7 +189,7 @@ static std::string get_line_from_file(SourceManager &SM,
  */
 std::string regex_preprocessor(const std::string &rx_str) {
   std::string ret_rx_str;
-  return ret_rx_str;
+  return rx_str;
 }
 
 bool regex_handler(std::string rx_str, std::string identifier_name) {

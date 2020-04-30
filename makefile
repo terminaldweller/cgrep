@@ -18,7 +18,7 @@ endif
 CXX_EXTRA?=
 CTAGS_I_PATH?=./
 #LD_FLAGS= -lstdc++fs
-LD_FLAGS=
+LD_FLAGS= -lboost_system -lboost_filesystem
 EXTRA_LD_FLAGS?=
 ADD_SANITIZERS_CC= -g -fsanitize=address -fno-omit-frame-pointer
 ADD_SANITIZERS_LD= -g -fsanitize=address
@@ -84,7 +84,7 @@ LD_FLAGS+=$(EXTRA_LD_FLAGS)
 
 .PHONY:all clean help ASM SO TAGS
 
-all: $(TARGET)
+all: pch.hpp.gch $(TARGET)
 
 everything:$(TARGET) A ASM SO $(TARGET)-dbg TAGS $(TARGET)-cov
 
@@ -98,14 +98,17 @@ depend:.depend
 
 -include ./.depend
 
-%.o:%.cpp
-	$(CXX) $(CXX_FLAGS) -c $< -o $@
+%.o:%.cpp pch.hpp.gch
+	$(CXX) -include-pch pch.hpp.gch $(CXX_FLAGS) -c $< -o $@
 
 %.odbg:%.cpp
 	$(CXX) $(CXX_FLAGS) -g -c $< -o $@
 
-%.ocov:%.cpp
+%.ocov:%.cpp pch.hpp.gch
 	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
+
+pch.hpp.gch: pch.hpp
+	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 ./cfe-extra/cfe_extra.o:./cfe-extra/cfe_extra.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
