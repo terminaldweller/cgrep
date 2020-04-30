@@ -5,6 +5,7 @@ import argparse
 import subprocess
 import os
 import sys
+import re
 
 test_files = ["/home/bloodstalker/extra/cgrep/cgrep.cpp"]
 
@@ -60,14 +61,19 @@ def main():
     argparser = Argparser()
     cgrep_exe = "cgrep"
     os.chdir("../")
-    print(os.getcwd())
+    # get LLVM libdir
+    llvm_libdir = call_from_shell_list(["llvm-config", "--libdir"])
+    # get LLVM version. upstream builds can have extra unwanted text attached.
+    llvm_version = re.findall("[0-9]*\.[0-9]*\.[0-9]*", call_from_shell_list(["llvm-config", "--version"]).stdout.decode("utf-8"))
+    # buld the magic sause. we dont wanna get stddef.h not found.
+    clang_builtin_headers = "--extra-arg=-I" + llvm_libdir.stdout.decode("utf-8")[:-1] + "/clang/" + llvm_version[0] + "/include"
     for cgrep_test_arg in cgrep_test_args:
         arg_list = cgrep_test_arg.split()
         arg_list.insert(0, cgrep_exe)
+        arg_list.append(clang_builtin_headers)
         arg_list.append(test_files[0])
         print(arg_list)
         ret = call_from_shell_list(arg_list)
-        #print("ret:", ret.returncode)
         print("ret:", ret.stdout.decode("utf-8"), end="")
         print("ret:", ret.stderr.decode("utf-8"), end="")
 

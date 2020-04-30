@@ -7,7 +7,27 @@
  * */
 /***********************************************************************************************/
 /*included modules*/
-#include "pch.hpp"
+#include "./cfe-extra/cfe_extra.h"
+#include "clang/AST/AST.h"
+#include "clang/AST/ASTConsumer.h"
+#include "clang/ASTMatchers/ASTMatchFinder.h"
+#include "clang/ASTMatchers/ASTMatchers.h"
+#include "clang/Basic/LLVM.h"
+#include "clang/Frontend/CompilerInstance.h"
+#include "clang/Frontend/FrontendActions.h"
+#include "clang/Lex/Lexer.h"
+#include "clang/Rewrite/Core/Rewriter.h"
+#include "clang/Tooling/CommonOptionsParser.h"
+#include "clang/Tooling/Tooling.h"
+#include "llvm/Support/raw_ostream.h"
+#include <cassert>
+#include <cstdlib>
+#include <dirent.h>
+#include <fstream>
+#include <iostream>
+#include <regex>
+#include <string>
+#include <vector>
 /***********************************************************************************************/
 /*used namespaces*/
 using namespace llvm;
