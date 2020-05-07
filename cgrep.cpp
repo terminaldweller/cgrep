@@ -423,6 +423,7 @@ public:
       SourceLocation SL = SR.getBegin();
       CheckSLValidity(SL);
       SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      CheckSLValidity(SL);
       if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
         return void();
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
