@@ -76,6 +76,10 @@ cl::opt<bool> CO_CXXFIELD("cxxfield",
                           cl::desc("Match CXX field member declarations."),
                           cl::init(false), cl::cat(CGrepCat),
                           cl::Optional); // done
+cl::opt<bool> CO_RECORD("recorddecl",
+                          cl::desc("Match a record declaration."),
+                          cl::init(false), cl::cat(CGrepCat),
+                          cl::Optional); // done
 cl::opt<bool> CO_UNION("union", cl::desc("Match unions."), cl::init(false),
                        cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_MACRO("macro", cl::desc("Match macro definitions."),
@@ -704,6 +708,38 @@ private:
   Rewriter &Rewrite [[maybe_unused]];
 };
 /***********************************************************************************************/
+class RecordHandler : public MatchFinder::MatchCallback {
+public:
+  explicit RecordHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+
+  virtual void run(const MatchFinder::MatchResult &MR) {
+    const RecordDecl *RD =
+        MR.Nodes.getNodeAs<clang::RecordDecl>("recorddecl");
+    if (RD) {
+      SourceRange SR = RD->getSourceRange();
+      SourceLocation SL = SR.getBegin();
+      CheckSLValidity(SL);
+      SL = Devi::SourceLocationHasMacro(SL, Rewrite, "start");
+      if (Devi::IsTheMatchInSysHeader(CO_SYSHDR, MR, SL))
+        return void();
+      if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
+        return void();
+      std::string name = RD->getNameAsString();
+      if (regex_handler(REGEX_PP(CO_REGEX), name)) {
+        ast_type_traits::DynTypedNode DNode =
+            ast_type_traits::DynTypedNode::create(*RD);
+        auto StartLocation = RD->getLocation();
+        auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
+        auto Range = SourceRange(StartLocation, EndLocation);
+        output_handler(MR, Range, *MR.SourceManager, true, DNode);
+      }
+    }
+  }
+
+private:
+  Rewriter &Rewrite [[maybe_unused]];
+};
+/***********************************************************************************************/
 class TraceVarHandlerSub : public MatchFinder::MatchCallback {
 public:
   explicit TraceVarHandlerSub(Rewriter &Rewrite) : Rewrite(Rewrite) {}
@@ -753,7 +789,6 @@ public:
       }
     }
   }
-
 
 private:
   MatchFinder Matcher;
@@ -921,7 +956,7 @@ public:
         HandlerForCXXMethod(R), HandlerForField(R), HandlerForStruct(R),
         HandlerForUnion(R), HandlerForNamedDecl(R), HandlerForDeclRefExpr(R),
         HandlerForCallExpr(R), HandlerForCXXCallExpr(R),
-        HandlerForRecordField(R) {
+        HandlerForRecordField(R), HandlerForRecord(R) {
     if (CO_FUNCTION || CO_ALL) {
       Matcher.addMatcher(functionDecl().bind("funcdecl"),
                          &HandlerForCalledFunc);
@@ -977,6 +1012,9 @@ public:
           fieldDecl(hasParent(cxxRecordDecl())).bind("recordfielddecl"),
           &HandlerForRecordField);
     }
+    if (CO_RECORD || CO_ALL) {
+      Matcher.addMatcher(recordDecl().bind("recorddecl"), &HandlerForRecord);
+    }
   }
 
   void HandleTranslationUnit(ASTContext &Context) override {
@@ -996,6 +1034,7 @@ private:
   CallExprHandler HandlerForCallExpr;
   CXXCallExprHandler HandlerForCXXCallExpr;
   RecordFieldHandler HandlerForRecordField;
+  RecordHandler HandlerForRecord;
   MatchFinder Matcher;
 };
 /***********************************************************************************************/

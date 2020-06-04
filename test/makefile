@@ -79,7 +79,7 @@ depend:.depend
 %.ocov:%.cpp
 	$(CXX) $(CXX_FLAGS) $(COV_CXX) -c $< -o $@
 
-$(TARGET): $(TARGET).o
+$(TARGET): $(OBJ_LIST)
 	$(CXX) $(LD_FLAGS) $^ -o $@
 
 $(TARGET)-static: $(TARGET).o

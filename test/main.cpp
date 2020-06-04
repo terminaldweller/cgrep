@@ -1,14 +1,15 @@
 
-class myClass {
-  public:
-    myClass() = default;
-    ~myClass() {}
+class myClassmain {
+public:
+  myClassmain() = default;
+  ~myClassmain() {}
 
-    void myMehtod1(void) {}
-    void myMehtod2(void) {}
-  private:
-    int a;
-    float b;
+  void myMehtod1(void) {}
+  void myMehtod2(void) {}
+
+private:
+  int a;
+  float b;
 };
 
 struct myStruct {
@@ -31,13 +32,13 @@ struct verymuchStruct {
 void myFunc1(void) {}
 void myFunc2(void) {}
 
-int main (int argc, char** argv) {
-  myClass mc;
+int main(int argc, char **argv) {
+  myClassmain mc;
   mc.myMehtod1();
   mc.myMehtod2();
   int a;
   float b;
-  int c,d;
-  a = c+d;
+  int c, d;
+  a = c + d;
   return 0;
 }

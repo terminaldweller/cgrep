@@ -24,6 +24,20 @@ cgrep_test_args = [
         "--struct --regex [sS]truct ./test/main.cpp",
         "--dir ./ --regex run --func",]
 
+cgrep_test_args_2 = [
+        "--regex test --func",
+        "--regex test --fielddecl",
+        "--regex test --memfunc",
+        "--regex test --var",
+        "--regex test --class",
+        "--regex test --struct",
+        "--regex test --union",
+        "--regex test --nameddecl",
+        "--regex test --declrefexpr",
+        "--regex test --call",
+        "--regex test --cxxcall",
+        "--regex test --",
+        ]
 
 class Argparser(object):
     def __init__(self):

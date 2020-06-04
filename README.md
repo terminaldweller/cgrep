@@ -132,6 +132,7 @@ For an up-to-date list, you can run `cgrep --help` or look at the man page.
   --nocolor                   - For terminals that don't supprt ANSI escape sequences. The default is to false.
   --nodecl                    - For switches that are not declarations, don't print declarations. Defaults to false.
   -p=<string>                 - Build path
+  --recorddecl                - Match a record declaration.
   --regex=<string>            - The regex to match against.
   --struct                    - Match structures.
   --syshdr                    - Match identifiers in system header as well. Defaults to false.

@@ -1,7 +1,67 @@
 [
     {
+        "command": "c++ -c -std=c++11 -fpic -o fielddecl.o fielddecl.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/fielddecl.cpp"
+    },
+    {
+        "command": "c++ -c -std=c++11 -fpic -o cxxmethoddecl.o cxxmethoddecl.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/cxxmethoddecl.cpp"
+    },
+    {
+        "command": "c++ -c -std=c++11 -fpic -o vardecl.o vardecl.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/vardecl.cpp"
+    },
+    {
+        "command": "c++ -c -std=c++11 -fpic -o cxxmembercallexpr.o cxxmembercallexpr.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/cxxmembercallexpr.cpp"
+    },
+    {
+        "command": "c++ -c -std=c++11 -fpic -o nameddecldef.o nameddecldef.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/nameddecldef.cpp"
+    },
+    {
+        "command": "c++ -c -std=c++11 -fpic -o cxxrecorddecl.o cxxrecorddecl.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/cxxrecorddecl.cpp"
+    },
+    {
+        "command": "c++ -c -std=c++11 -fpic -o structdecl.o structdecl.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/structdecl.cpp"
+    },
+    {
+        "command": "c++ -c -std=c++11 -fpic -o callexpr.o callexpr.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/callexpr.cpp"
+    },
+    {
+        "command": "c++ -c -std=c++11 -fpic -o uniondecdef.o uniondecdef.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/uniondecdef.cpp"
+    },
+    {
+        "command": "c++ -c -std=c++11 -fpic -o declrefexpr.o declrefexpr.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/declrefexpr.cpp"
+    },
+    {
+        "command": "c++ -c -std=c++11 -fpic -o function.o function.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/function.cpp"
+    },
+    {
         "command": "c++ -c -std=c++11 -fpic -o main.o main.cpp",
-        "directory": "/home/bloodstalker/devi/hell2/cgrep/test",
-        "file": "/home/bloodstalker/devi/hell2/cgrep/test/main.cpp"
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/main.cpp"
+    },
+    {
+        "command": "c++ -c -std=c++11 -fpic -o classdecl.o classdecl.cpp",
+        "directory": "/home/bloodstalker/extra/cgrep/test",
+        "file": "/home/bloodstalker/extra/cgrep/test/classdecl.cpp"
     }
 ]
