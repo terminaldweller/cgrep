@@ -1,21 +1,21 @@
 
 namespace vardecl_ns{
-int a;
+int gtesta;
 
 int testFunction(int a, int b);
 int testFunction(int a, int b) { return a + b; }
 
 class testClass {
 public:
-  testClass(int a) : a(a) {}
+  testClass(int a) : testa(a) {}
   virtual ~testClass();
 
   void cxxMethod(double a) {}
 
 private:
-  int a;
+  int testa;
 };
 
 #define vardeclmacro varDeclMacroExpanded
-int vardeclmacro;
+int testvardeclmacro;
 }; // namespace

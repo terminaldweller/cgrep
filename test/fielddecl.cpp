@@ -4,12 +4,12 @@ namespace fielddecl_ns{
 
 struct testStruct {
   int fieldone;
-  float fieldtwo;
+  float testfieldtwo;
   int fieldmacro;
 };
 
 union testUnion {
-  int fieldone;
+  int testfieldone;
   bool fieldtwo;
 };
 
@@ -18,7 +18,7 @@ public:
   testClass(void);
   virtual ~testClass();
 
-  void myMethod(void);
+  void testMethod(void);
 
 private:
   int an_arg;

@@ -1,6 +1,6 @@
 
 namespace function_ns{
-void MyFunc(void) { return; }
+void testMyFunc(void) { return; }
 
 class yolo {
 public:
@@ -8,7 +8,7 @@ public:
   yolo(int a) : a(a) {}
   virtual ~yolo();
 
-  void yolofunc(void) { return; }
+  void testyolofunc(void) { return; }
 
 private:
   int a;
@@ -16,5 +16,5 @@ private:
 
 #define MFunc macroedFunc
 
-void MFunc(void) { return; }
+void testFunc(void) { return; }
 } // namespace

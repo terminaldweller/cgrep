@@ -4,7 +4,7 @@ namespace declrefexpr_ns{
 class testClass {
 public:
   testClass() = default;
-  int a;
+  int testa;
 
 private:
 };
@@ -12,9 +12,9 @@ private:
 
 int __attribute__((weak)) main(int argc, char *argv[]) {
   int a;
-  int b;
+  int testb;
   declrefexpr_ns::testClass tc;
-  tc.a = 10;
+  tc.testa = 10;
 
-  return a + b;
+  return a + testb;
 }

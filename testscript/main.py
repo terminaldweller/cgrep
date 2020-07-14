@@ -9,6 +9,20 @@ import re
 
 test_files = ["/home/bloodstalker/extra/cgrep/cgrep.cpp"]
 
+test_files_2 = [
+        "./test/function.cpp",
+        "./test/fielddecl.cpp",
+        "./test/cxxmethoddecl.cpp",
+        "./test/vardecl.cpp",
+        "./test/classdecl.cpp",
+        "./test/structdecl.cpp",
+        "./test/uniondecdef.cpp",
+        "./test/nameddecldef.cpp",
+        "./test/declrefexpr.cpp",
+        "./test/callexpr.cpp",
+        "./test/cxxmembercallexpr.cpp",
+        ]
+
 cgrep_test_args = [
         "-A 1 -B 1 --func --var --regex n[aA]m",
         "-A 1 -B 1 --func --var --awk --regex n[aA]m",
@@ -25,18 +39,17 @@ cgrep_test_args = [
         "--dir ./ --regex run --func",]
 
 cgrep_test_args_2 = [
-        "--regex test --func",
-        "--regex test --fielddecl",
-        "--regex test --memfunc",
-        "--regex test --var",
-        "--regex test --class",
-        "--regex test --struct",
-        "--regex test --union",
-        "--regex test --nameddecl",
-        "--regex test --declrefexpr",
-        "--regex test --call",
-        "--regex test --cxxcall",
-        "--regex test --",
+        "--func --regex test",
+        "--cxxfield --regex test",
+        "--memfunc --regex test",
+        "--var --regex test",
+        "--class --regex test",
+        "--struct --regex test",
+        "--union --regex test",
+        "--nameddecl --regex test",
+        "--declrefexpr --regex test",
+        "--call --regex test",
+        "--cxxcall --regex test",
         ]
 
 class Argparser(object):
@@ -81,11 +94,11 @@ def main():
     llvm_version = re.findall("[0-9]*\.[0-9]*\.[0-9]*", call_from_shell_list(["llvm-config", "--version"]).stdout.decode("utf-8"))
     # buld the magic sause. we dont wanna get stddef.h not found.
     clang_builtin_headers = "--extra-arg=-I" + llvm_libdir.stdout.decode("utf-8")[:-1] + "/clang/" + llvm_version[0] + "/include"
-    for cgrep_test_arg in cgrep_test_args:
+    for cgrep_test_arg, cgrep_test_files in zip(cgrep_test_args_2, test_files_2):
         arg_list = cgrep_test_arg.split()
         arg_list.insert(0, cgrep_exe)
-        arg_list.append(clang_builtin_headers)
-        arg_list.append(test_files[0])
+        arg_list.insert(1, clang_builtin_headers)
+        arg_list.append(cgrep_test_files)
         print(arg_list)
         ret = call_from_shell_list(arg_list)
         print("ret:", ret.stdout.decode("utf-8"), end="")
