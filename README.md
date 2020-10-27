@@ -36,7 +36,6 @@ If it makes sense sure, but I want to be careful with what cgrep implements. If 
 
 You can get the source files from the [release](https://github.com/bloodstalker/cgrep/releases) page or a release branch usually named `rcx`.<br/>
 The Release Candidate branches are the release branches. Master is the dev branch.<br/>
-Currently the master branch requires `libloost-filesystem`, which will most probably change in the future.<br/>
 
 ### Fedora
 `sudo dnf install clang-devel llvm-devel llvm-static`
