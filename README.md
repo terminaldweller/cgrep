@@ -74,7 +74,7 @@ The makefile assumes clang is called `clang` and llvm-config is called `llvm-con
 make CXX=clang-9 LLVM_CONF=llvm-config-9
 ```
 
-For windows builds, cygwin builds are supported. Get llvm and clang along with their sources and build like usual. If you run into problems while bulding on cygwin, you can take a look at the `appveyor.yml` file under the repository root.
+For windows builds, cygwin builds are supported. Get llvm and clang along with their sources and build like usual. If you run into problems while building on cygwin, you can take a look at the `appveyor.yml` file under the repository root.
 
 ## Usage
 
@@ -86,11 +86,11 @@ cgrep -A 1 -B 1 --func --declrefexpr --regex n[aA]m --nocolor --nodecl ./myaweso
 
 In order for cgrep to work, you need to have a compilation database, tools like `cmake` can generate one for you.<br/>
 You can, by all means, run cgrep without a compilation database but whether that works or not really depends on your source file. Can you build your source file with clang without passing it any options?
-If the answer to that is yes, then you can just run cgrep without a compilation databse like so:<br/>
+If the answer to that is yes, then you can just run cgrep without a compilation database like so:<br/>
 ```bash
 cgrep -A 1 -B 1 --func --declrefexpr --regex n[aA]m --nocolor --nodecl ./myawesomecode.cpp --
 ```
-the `--` at the end is an explicit way of saying that you will not be providing a compialtion database. Newer versions of clang will try to still go through with the compilation even if there is no compilaiton database found.
+the `--` at the end is an explicit way of saying that you will not be providing a compilation database. Newer versions of clang will try to still go through with the compilation even if there is no compilation database found.
 Otherwise you need a compilation database.<br/>
 
 Please do note that the regex will pass through both C++ and the regex engine, so if you would want to escape `\`, the regex you pass as the command line arg would be `\\\\` instead of the normal `\\`.<br/>
@@ -112,14 +112,14 @@ For an up-to-date list, you can run `cgrep --help` or look at the man page.
 
 ```bash
   -A=<int>                    - Same as grep, how many lines after the matched line to print. Defaults to 0.
-  -B=<int>                    - Same as grep, howm many lines before the matched line to print. Defaults to 0.
+  -B=<int>                    - Same as grep, how many lines before the matched line to print. Defaults to 0.
   --all                       - Turns on all switches other than nameddecl.
-  --awk                       - Outputs location in a gawk freidnly format, not meant for human consumption. Defaults to false.
+  --awk                       - Outputs location in a gawk friendly format, not meant for human consumption. Defaults to false.
   --call                      - Match function calls.
-  --class                     - Match class declrations.
+  --class                     - Match class declarations.
   --cxxcall                   - Match member function calls.
   --declrefexpr               - Matches declrefexpr.
-  --dir=<string>              - recursively goes through all the files and directories. assumes compilation databases are present for all source files.
+  --dir=<string>              - Recursively goes through all the files and directories. Assumes compilation databases are present for all source files.
   --extra-arg=<string>        - Additional argument to append to the compiler command line
   --extra-arg-before=<string> - Additional argument to prepend to the compiler command line
   --func                      - Match functions.
@@ -128,8 +128,8 @@ For an up-to-date list, you can run `cgrep --help` or look at the man page.
   --mainfile                  - Match identifiers in the main file only. Defaults to true.
   --memfunc                   - Match member functions.
   --memvar                    - Match member variables.
-  --nameddecl                 - Matches all named declrations.
-  --nocolor                   - For terminals that don't supprt ANSI escape sequences. The default is to false.
+  --nameddecl                 - Matches all named declarations.
+  --nocolor                   - For terminals that don't support ANSI escape sequences. The default is to false.
   --nodecl                    - For switches that are not declarations, don't print declarations. Defaults to false.
   -p=<string>                 - Build path
   --recorddecl                - Match a record declaration.
