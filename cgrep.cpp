@@ -40,7 +40,7 @@ namespace {
 static llvm::cl::OptionCategory CGrepCat("cgrep options");
 cl::opt<std::string> CO_RECURSIVE(
     "dir",
-    cl::desc("recursively goes through all the files and directories. assumes "
+    cl::desc("Recursively goes through all the files and directories. Assumes "
              "compilation databases are present for all source files."),
     cl::init(""), cl::cat(CGrepCat), cl::Optional);
 cl::opt<std::string> CO_REGEX("regex", cl::desc("The regex to match against."),
@@ -66,7 +66,7 @@ cl::opt<bool> CO_CXXCALL("cxxcall", cl::desc("Match member function calls."),
 cl::opt<bool> CO_CFIELD("cfield", cl::desc("Match C field declarations."),
                         cl::init(false), cl::cat(CGrepCat),
                         cl::Optional); // done
-cl::opt<bool> CO_CLASS("class", cl::desc("Match class declrations."),
+cl::opt<bool> CO_CLASS("class", cl::desc("Match class declarations."),
                        cl::init(false), cl::cat(CGrepCat),
                        cl::Optional); // done
 cl::opt<bool> CO_STRUCT("struct", cl::desc("Match structures."),
@@ -98,7 +98,7 @@ cl::opt<bool> CO_ALL("all",
                      cl::desc("Turns on all switches other than nameddecl."),
                      cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_NAMEDDECL("nameddecl",
-                           cl::desc("Matches all named declrations."),
+                           cl::desc("Matches all named declarations."),
                            cl::init(false), cl::cat(CGrepCat),
                            cl::Optional); // done
 cl::opt<bool> CO_DECLREFEXPR("declrefexpr", cl::desc("Matches declrefexpr."),
@@ -106,11 +106,11 @@ cl::opt<bool> CO_DECLREFEXPR("declrefexpr", cl::desc("Matches declrefexpr."),
                              cl::Optional); // done
 cl::opt<bool>
     CO_AWK("awk",
-           cl::desc("Outputs location in a gawk freidnly format, not meant for "
+           cl::desc("Outputs location in a gawk friendly format, not meant for "
                     "human consumption. Defaults to false."),
            cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_NOCOLOR("nocolor",
-                         cl::desc("For terminals that don't supprt ANSI escape "
+                         cl::desc("For terminals that don't support ANSI escape "
                                   "sequences. The default is to false."),
                          cl::init(false), cl::cat(CGrepCat),
                          cl::Optional); // done
@@ -134,7 +134,7 @@ cl::opt<int> CO_A("A",
                            "line to print. Defaults to 0."),
                   cl::init(0), cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<int> CO_B("B",
-                  cl::desc("Same as grep, howm many lines before the matched "
+                  cl::desc("Same as grep, how many lines before the matched "
                            "line to print. Defaults to 0."),
                   cl::init(0), cl::cat(CGrepCat), cl::Optional); // done
 } // namespace
@@ -228,7 +228,7 @@ bool regex_handler(std::string rx_str, std::string identifier_name) {
  * @param MR match result
  * @param SR source range for the matched result
  * @param SM sourcemanager
- * @param isdecl is the matched result a delaration
+ * @param isdecl is the matched result a declaration
  * @param DTN the matched result cast to a dynamically typed node
  */
 void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
@@ -295,7 +295,7 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
 /**
  * @brief Gets the list of all directories and sub-directories starting from a
  * base directory.
- * @param _path where the the base directory is.
+ * @param _path where the base directory is.
  * @return Returns the list of all found dirs.
  */
 std::vector<std::string> listDirs(std::string path) {
