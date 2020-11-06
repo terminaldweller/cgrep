@@ -54,6 +54,8 @@ You can get cgrep from AUR. Thanks to [schra](https://github.com/schra).
 ### Cygwin
 You will need `libclang-devel, libllvm-devel, clang, libiconv-devel`.
 
+### Good Ole' Makefiles
+**NOTE:the monolithic libtooling library is not supported with the good ole makefiles. Look down below at Cmake for that.**<br/>
 Assuming you have the llvm/clang libraries (the build file will read your llvm options using `llvm-config` so make sure it's in path), just run:
 
 ```bash
@@ -74,6 +76,19 @@ make CXX=clang-9 LLVM_CONF=llvm-config-9
 ```
 
 For windows builds, cygwin builds are supported. Get llvm and clang along with their sources and build like usual. If you run into problems while building on cygwin, you can take a look at the `appveyor.yml` file under the repository root.
+
+### Cmake
+To do an out-of-source build simply do:<br/>
+```bash
+git clone https://github.com/bloodstalker/cgrep
+cd cgrep
+git submodule init
+git submodule update
+mkdir build
+cmake ../ -DLLVM_CONF=llvm-config-10 -DCMAKE_CXX_COMPIELR=clang++-10 -DUSE_MONOLITH_LIBTOOLING=ON
+make
+```
+The 3 variables denote the llvm-config executable name, the clang++ name and finally, the last one tells cmake whether to build using the single c++ libtooling library or just use the old way with all the libtooling libraries.<br/>
 
 ## Usage
 
