@@ -1,6 +1,6 @@
 TARGET=cgrep
-SHELL=bash
-SHELL?=bash
+SHELL=sh
+SHELL?=sh
 CC=clang
 CC?=clang
 ifdef OS
