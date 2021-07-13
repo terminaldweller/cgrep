@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/bloodstalker/cgrep.svg?branch=master)](https://travis-ci.org/bloodstalker/cgrep)
+[![Build Status](https://travis-ci.com/terminaldweller/cgrep.svg?branch=master)](https://travis-ci.com/terminaldweller/cgrep)
 [![Build status](https://ci.appveyor.com/api/projects/status/caab8oxmgljb87te?svg=true)](https://ci.appveyor.com/project/bloodstalker/cgrep)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/bloodstalker/cgrep.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bloodstalker/cgrep/context:cpp)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/726c70d0e3294f149036fa6134998fe8)](https://www.codacy.com/manual/bloodstalker/cgrep?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bloodstalker/cgrep&amp;utm_campaign=Badge_Grade)
