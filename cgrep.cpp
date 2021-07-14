@@ -76,10 +76,9 @@ cl::opt<bool> CO_CXXFIELD("cxxfield",
                           cl::desc("Match CXX field member declarations."),
                           cl::init(false), cl::cat(CGrepCat),
                           cl::Optional); // done
-cl::opt<bool> CO_RECORD("recorddecl",
-                          cl::desc("Match a record declaration."),
-                          cl::init(false), cl::cat(CGrepCat),
-                          cl::Optional); // done
+cl::opt<bool> CO_RECORD("recorddecl", cl::desc("Match a record declaration."),
+                        cl::init(false), cl::cat(CGrepCat),
+                        cl::Optional); // done
 cl::opt<bool> CO_UNION("union", cl::desc("Match unions."), cl::init(false),
                        cl::cat(CGrepCat), cl::Optional); // done
 cl::opt<bool> CO_MACRO("macro", cl::desc("Match macro definitions."),
@@ -109,11 +108,12 @@ cl::opt<bool>
            cl::desc("Outputs location in a gawk friendly format, not meant for "
                     "human consumption. Defaults to false."),
            cl::init(false), cl::cat(CGrepCat), cl::Optional); // done
-cl::opt<bool> CO_NOCOLOR("nocolor",
-                         cl::desc("For terminals that don't support ANSI escape "
-                                  "sequences. The default is to false."),
-                         cl::init(false), cl::cat(CGrepCat),
-                         cl::Optional); // done
+cl::opt<bool>
+    CO_NOCOLOR("nocolor",
+               cl::desc("For terminals that don't support ANSI escape "
+                        "sequences. The default is to false."),
+               cl::init(false), cl::cat(CGrepCat),
+               cl::Optional); // done
 cl::opt<bool>
     CO_NODECL("nodecl",
               cl::desc("For switches that are not declarations, don't print "
@@ -719,8 +719,7 @@ public:
   explicit RecordHandler(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
   virtual void run(const MatchFinder::MatchResult &MR) {
-    const RecordDecl *RD =
-        MR.Nodes.getNodeAs<clang::RecordDecl>("recorddecl");
+    const RecordDecl *RD = MR.Nodes.getNodeAs<clang::RecordDecl>("recorddecl");
     if (RD) {
       SourceRange SR = RD->getSourceRange();
       SourceLocation SL = SR.getBegin();
@@ -761,7 +760,7 @@ public:
     }
   }
 
-  void setND(NamedDecl const * Original_Declaration) {
+  void setND(NamedDecl const *Original_Declaration) {
     ND = Original_Declaration;
   }
 
@@ -803,26 +802,27 @@ private:
 };
 /***********************************************************************************************/
 class SubDynamicMatcher : public MatchFinder::MatchCallback {
-  public:
-    explicit SubDynamicMatcher(Rewriter &Rewrite) : Rewrite(Rewrite) {}
+public:
+  explicit SubDynamicMatcher(Rewriter &Rewrite) : Rewrite(Rewrite) {}
 
-    virtual void run(const MatchFinder::MatchResult &MR) override {}
+  virtual void run(const MatchFinder::MatchResult &MR) override {}
 
-  private:
-    MatchFinder Matcher;
-    Rewriter &Rewrite [[maybe_unused]];
+private:
+  MatchFinder Matcher;
+  Rewriter &Rewrite [[maybe_unused]];
 };
 /***********************************************************************************************/
 class DynamicMatcher : public MatchFinder::MatchCallback {
-  public:
-    explicit DynamicMatcher(Rewriter &Rewrite) : Rewrite(Rewrite), SubDynamicHandler(Rewrite)  {}
+public:
+  explicit DynamicMatcher(Rewriter &Rewrite)
+      : Rewrite(Rewrite), SubDynamicHandler(Rewrite) {}
 
-    virtual void run(const MatchFinder::MatchResult &MR) override {}
+  virtual void run(const MatchFinder::MatchResult &MR) override {}
 
-  private:
-    MatchFinder Matcher;
-    Rewriter &Rewrite [[maybe_unused]];
-    SubDynamicMatcher SubDynamicHandler;
+private:
+  MatchFinder Matcher;
+  Rewriter &Rewrite [[maybe_unused]];
+  SubDynamicMatcher SubDynamicHandler;
 };
 /***********************************************************************************************/
 class PPInclusion : public PPCallbacks {
@@ -943,8 +943,7 @@ private:
 /***********************************************************************************************/
 class DynamicASTConsumer : public ASTConsumer {
 public:
-  explicit DynamicASTConsumer(Rewriter &R) : DynamicHandler(R) {
-  }
+  explicit DynamicASTConsumer(Rewriter &R) : DynamicHandler(R) {}
 
   void HandleTranslationUnit(ASTContext &Context) override {
     Matcher.matchAST(Context);
@@ -1106,7 +1105,11 @@ private:
 /***********************************************************************************************/
 /*Main*/
 int main(int argc, const char **argv) {
+#if __clang_major__ >= 13
+  auto op = CommonOptionsParser.create(argc, argv, CGrepCat);
+#else
   CommonOptionsParser op(argc, argv, CGrepCat);
+#endif
   ClangTool Tool(op.getCompilations(), op.getSourcePathList());
   int ret = 0;
 
