@@ -152,3 +152,33 @@ matrix:
         - make CXX=clang-11 LLVM_CONF=llvm-config-11
       after_success:
         bash run.sh
+    - dist: bionic
+      name: llvm12
+      sudo: required
+      language: cpp
+      before_script:
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update -y
+      - wget https://apt.llvm.org/llvm.sh
+      - chmod +x llvm.sh
+      - sudo ./llvm.sh 12
+      - sudo apt-get install -y clang-12 llvm-12-dev libclang-common-12-dev libclang-12-dev
+      - git submodule init
+      - git submodule update
+      script:
+        - mkdir build && cd build && cmake ../ -DLLVM_CONF=llvm-config-12 -DCMAKE_CXX_COMPILER=clang++-12 -DUSE_MONOLITH_LIBTOOLING=OFF&& make -j2
+    - dist: bionic
+      name: llvm13
+      sudo: required
+      language: cpp
+      before_script:
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update -y
+      - wget https://apt.llvm.org/llvm.sh
+      - chmod +x llvm.sh
+      - sudo ./llvm.sh 13
+      - sudo apt-get install -y clang-13 llvm-13-dev libclang-common-13-dev libclang-13-dev
+      - git submodule init
+      - git submodule update
+      script:
+        - mkdir build && cd build && cmake ../ -DLLVM_CONF=llvm-config-13 -DCMAKE_CXX_COMPILER=clang++-13 -DUSE_MONOLITH_LIBTOOLING=OFF&& make -j2
