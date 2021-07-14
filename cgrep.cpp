@@ -1106,11 +1106,16 @@ private:
 /*Main*/
 int main(int argc, const char **argv) {
 #if __clang_major__ >= 13
-  auto op = CommonOptionsParser::create(argc, argv, CGrepCat);
+  auto op =
+      CommonOptionsParser::create(argc, argv, CGrepCat);
+  if (auto error = op.takeError()) {
+    errs() << toString(std::move(error)) << "\n";
+    return 1;
+  }
+  ClangTool Tool(op->getCompilations(), op->getSourcePathList());
 #else
   CommonOptionsParser op(argc, argv, CGrepCat);
 #endif
-  ClangTool Tool(op.getCompilations(), op.getSourcePathList());
   int ret = 0;
 
   if ("" != CO_TRACE) {
