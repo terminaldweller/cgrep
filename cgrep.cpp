@@ -154,6 +154,12 @@ cl::opt<int> CO_B("B",
 #define DEVI_GETLOCEND getEndLoc
 #endif
 
+#if __clang_major__ >= 12
+#define AST_TYPE_TRAITS clang
+#else
+#define AST_TYPE_TRAITS clang::ast_type_traits
+#endif
+
 #define RED "\033[1;31m"
 #define CYAN "\033[1;36m"
 #define GREEN "\033[1;32m"
@@ -233,7 +239,7 @@ bool regex_handler(std::string rx_str, std::string identifier_name) {
  */
 void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
                     SourceManager &SM, bool isdecl,
-                    ast_type_traits::DynTypedNode &DTN) {
+                    AST_TYPE_TRAITS::DynTypedNode &DTN) {
   std::ifstream mainfile;
   mainfile.open(MR.SourceManager->getFilename(SR.getBegin()).str());
   auto linenumber = MR.SourceManager->getSpellingLineNumber(SR.getBegin());
@@ -336,8 +342,8 @@ public:
         return void();
       std::string name = FD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode =
-            ast_type_traits::DynTypedNode::create(*FD);
+        AST_TYPE_TRAITS::DynTypedNode DNode =
+            AST_TYPE_TRAITS::DynTypedNode::create(*FD);
         auto StartLocation = FD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -368,8 +374,8 @@ public:
         return void();
       std::string name = FD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode =
-            ast_type_traits::DynTypedNode::create(*FD);
+        AST_TYPE_TRAITS::DynTypedNode DNode =
+            AST_TYPE_TRAITS::DynTypedNode::create(*FD);
         auto StartLocation = FD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -401,8 +407,8 @@ public:
         return void();
       std::string name = MD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode =
-            ast_type_traits::DynTypedNode::create(*MD);
+        AST_TYPE_TRAITS::DynTypedNode DNode =
+            AST_TYPE_TRAITS::DynTypedNode::create(*MD);
         auto StartLocation = MD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -433,8 +439,8 @@ public:
         return void();
       std::string name = VD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode =
-            ast_type_traits::DynTypedNode::create(*VD);
+        AST_TYPE_TRAITS::DynTypedNode DNode =
+            AST_TYPE_TRAITS::DynTypedNode::create(*VD);
         auto StartLocation = VD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -464,8 +470,8 @@ public:
         return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode =
-            ast_type_traits::DynTypedNode::create(*RD);
+        AST_TYPE_TRAITS::DynTypedNode DNode =
+            AST_TYPE_TRAITS::DynTypedNode::create(*RD);
         auto StartLocation = RD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -495,8 +501,8 @@ public:
         return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode =
-            ast_type_traits::DynTypedNode::create(*RD);
+        AST_TYPE_TRAITS::DynTypedNode DNode =
+            AST_TYPE_TRAITS::DynTypedNode::create(*RD);
         auto StartLocation = RD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -526,8 +532,8 @@ public:
         return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode =
-            ast_type_traits::DynTypedNode::create(*RD);
+        AST_TYPE_TRAITS::DynTypedNode DNode =
+            AST_TYPE_TRAITS::DynTypedNode::create(*RD);
         auto StartLocation = RD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -557,8 +563,8 @@ public:
         return void();
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode =
-            ast_type_traits::DynTypedNode::create(*ND);
+        AST_TYPE_TRAITS::DynTypedNode DNode =
+            AST_TYPE_TRAITS::DynTypedNode::create(*ND);
         auto StartLocation = ND->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -591,8 +597,8 @@ public:
       if (!Devi::IsTheMatchInMainFile(CO_MAINFILE, MR, SL))
         return void();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DTN =
-            ast_type_traits::DynTypedNode::create(*ND);
+        AST_TYPE_TRAITS::DynTypedNode DTN =
+            AST_TYPE_TRAITS::DynTypedNode::create(*ND);
         auto StartLocation = ND->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -626,8 +632,8 @@ public:
       }
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DTN =
-            ast_type_traits::DynTypedNode::create(*CE);
+        AST_TYPE_TRAITS::DynTypedNode DTN =
+            AST_TYPE_TRAITS::DynTypedNode::create(*CE);
         auto StartLocation = CE->getExprLoc();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -662,8 +668,8 @@ public:
       }
       std::string name = ND->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode =
-            ast_type_traits::DynTypedNode::create(*CE);
+        AST_TYPE_TRAITS::DynTypedNode DNode =
+            AST_TYPE_TRAITS::DynTypedNode::create(*CE);
         auto StartLocation = CE->getExprLoc();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -694,8 +700,8 @@ public:
         return void();
       std::string name = FD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode =
-            ast_type_traits::DynTypedNode::create(*FD);
+        AST_TYPE_TRAITS::DynTypedNode DNode =
+            AST_TYPE_TRAITS::DynTypedNode::create(*FD);
         auto StartLocation = FD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
@@ -726,8 +732,8 @@ public:
         return void();
       std::string name = RD->getNameAsString();
       if (regex_handler(REGEX_PP(CO_REGEX), name)) {
-        ast_type_traits::DynTypedNode DNode =
-            ast_type_traits::DynTypedNode::create(*RD);
+        AST_TYPE_TRAITS::DynTypedNode DNode =
+            AST_TYPE_TRAITS::DynTypedNode::create(*RD);
         auto StartLocation = RD->getLocation();
         auto EndLocation = StartLocation.getLocWithOffset(name.size() - 1);
         auto Range = SourceRange(StartLocation, EndLocation);
