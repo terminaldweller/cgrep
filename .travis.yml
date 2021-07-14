@@ -166,7 +166,7 @@ matrix:
       - git submodule init
       - git submodule update
       script:
-        - make CXX-clang-12 LLVM_CONF=llvm-config-12
+        - make CXX=clang-12 LLVM_CONF=llvm-config-12
     - dist: bionic
       name: llvm13
       sudo: required
@@ -181,4 +181,4 @@ matrix:
       - git submodule init
       - git submodule update
       script:
-        - make CXX-clang-13 LLVM_CONF=llvm-config-13
+        - make CXX=clang-13 LLVM_CONF=llvm-config-13
