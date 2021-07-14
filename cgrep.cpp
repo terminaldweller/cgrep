@@ -1106,7 +1106,7 @@ private:
 /*Main*/
 int main(int argc, const char **argv) {
 #if __clang_major__ >= 13
-  auto op = CommonOptionsParser.create(argc, argv, CGrepCat);
+  auto op = CommonOptionsParser::create(argc, argv, CGrepCat);
 #else
   CommonOptionsParser op(argc, argv, CGrepCat);
 #endif
