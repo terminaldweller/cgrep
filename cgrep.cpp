@@ -1106,8 +1106,7 @@ private:
 /*Main*/
 int main(int argc, const char **argv) {
 #if __clang_major__ >= 13
-  auto op =
-      CommonOptionsParser::create(argc, argv, CGrepCat);
+  auto op = CommonOptionsParser::create(argc, argv, CGrepCat);
   if (auto error = op.takeError()) {
     errs() << toString(std::move(error)) << "\n";
     return 1;
@@ -1115,6 +1114,7 @@ int main(int argc, const char **argv) {
   ClangTool Tool(op->getCompilations(), op->getSourcePathList());
 #else
   CommonOptionsParser op(argc, argv, CGrepCat);
+  ClangTool Tool(op.getCompilations(), op.getSourcePathList());
 #endif
   int ret = 0;
 
