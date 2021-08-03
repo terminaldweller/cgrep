@@ -3,7 +3,19 @@ cmake_minimum_required(VERSION 3.14.5)
 project(cgrep VERSION 1.1)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(LLVM_CONF llvm-config-10 CACHE STRING "set the actual name of llvm-config, i.e. llvm-config-10")
+set(LLVM_CONF "" CACHE STRING "set the actual name of llvm-config, i.e. llvm-config-10")
+
+set(LLVM_CONF_TMP "${LLVM_CONF}")
+unset(LLVM_CONF CACHE)
+
+if(LLVM_CONF_TMP STREQUAL "")
+  # If LLVM_CONF wasn't provided, search for it.
+  find_program(LLVM_CONF NAMES llvm-config llvm-config-12 llvm-config-11 llvm-config-10 REQUIRED)
+else()
+  # If LLVM_CONF was provided, check if the executable actually exists.
+  find_program(LLVM_CONF NAMES "${LLVM_CONF_TMP}" REQUIRED)
+endif()
+unset(LLVM_CONF_TMP)
 
 function(CleanMessage)
   execute_process(COMMAND ${CMAKE_COMMAND} -E echo "${ARGN}")
