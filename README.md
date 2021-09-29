@@ -69,7 +69,7 @@ make
 After the build is finished you can choose to run `make install`. It will simply symlink cgrep into `/usr/local/bin`.
 
 If you have installed LLVM but don't have `llvm-config`, you are missing the dev package for LLVM.<br/>
-`cgrep` supports LLVM 5,6,7,8,9,10 and 11.<br/>
+`cgrep` supports LLVM 5,6,7,8,9,10, 11, 12 and 13.<br/>
 The makefile assumes clang is called `clang` and llvm-config is called `llvm-config`. On some distros, the names might not be the same. In those cases use `CXX` and `LLVM_CONF` to pass the values to the makefile like so:
 ```bash
 make CXX=clang-9 LLVM_CONF=llvm-config-9
@@ -80,12 +80,12 @@ For windows builds, cygwin builds are supported. Get llvm and clang along with t
 ### Cmake
 To do an out-of-source build simply do:<br/>
 ```bash
-git clone https://github.com/bloodstalker/cgrep
+git clone https://github.com/terminaldweller/cgrep
 cd cgrep
 git submodule init
 git submodule update
 mkdir build
-cmake ../ -DLLVM_CONF=llvm-config-10 -DCMAKE_CXX_COMPIELR=clang++-10 -DUSE_MONOLITH_LIBTOOLING=ON
+cmake ../ -DLLVM_CONF=llvm-config-10 -DCMAKE_CXX_COMPILER=clang++-10 -DUSE_MONOLITH_LIBTOOLING=ON
 make
 ```
 The 3 variables denote the llvm-config executable name, the clang++ name and finally, the last one tells cmake whether to build using the single c++ libtooling library or just use the old way with all the libtooling libraries.<br/>
