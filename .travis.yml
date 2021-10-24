@@ -121,3 +121,18 @@ matrix:
       - git submodule update
       script:
         - make CXX=clang-13 LLVM_CONF=llvm-config-13
+    - dist: bionic
+      name: llvm14
+      sudo: required
+      language: cpp
+      before_script:
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update -y
+      - wget https://apt.llvm.org/llvm.sh
+      - chmod +x llvm.sh
+      - sudo ./llvm.sh 14
+      - sudo apt-get install -y clang-14 llvm-14-dev libclang-common-14-dev libclang-14-dev
+      - git submodule init
+      - git submodule update
+      script:
+        - make CXX=clang-14 LLVM_CONF=llvm-config-14

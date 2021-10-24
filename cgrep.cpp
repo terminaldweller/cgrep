@@ -137,6 +137,11 @@ cl::opt<int> CO_B("B",
                   cl::desc("Same as grep, how many lines before the matched "
                            "line to print. Defaults to 0."),
                   cl::init(0), cl::cat(CGrepCat), cl::Optional); // done
+cl::opt<int>
+    CO_C("C",
+         cl::desc("Same as grep, how many lines before and after the matched "
+                  "line to print. Defaults to 0."),
+         cl::init(0), cl::cat(CGrepCat), cl::Optional); // done
 } // namespace
 /***********************************************************************************************/
 #if 1
@@ -253,8 +258,14 @@ void output_handler(const MatchFinder::MatchResult &MR, SourceRange SR,
     std::cout << CC_RED << MR.SourceManager->getFilename(SR.getBegin()).str()
               << ":" << linenumber << ":" << columnnumber_start << CC_NORMAL;
   } else {
-    unsigned line_range_begin = linenumber - CO_B;
-    unsigned line_range_end = linenumber + CO_A;
+    unsigned line_range_begin;
+    unsigned line_range_end;
+    if (0 >= CO_C) {
+      line_range_begin = linenumber - CO_C;
+      line_range_end = linenumber + CO_C;
+    }
+    line_range_begin = linenumber - CO_B;
+    line_range_end = linenumber + CO_A;
     std::string line;
     unsigned line_nu = 0;
     while (getline(mainfile, line)) {
