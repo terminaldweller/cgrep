@@ -69,7 +69,7 @@ make
 After the build is finished you can choose to run `make install`. It will simply symlink cgrep into `/usr/local/bin`.
 
 If you have installed LLVM but don't have `llvm-config`, you are missing the dev package for LLVM.<br/>
-`cgrep` supports LLVM 5,6,7,8,9,10, 11, 12 and 13.<br/>
+`cgrep` supports LLVM 7,8,9,10,11,12,13 and 14.<br/>
 The makefile assumes clang is called `clang` and llvm-config is called `llvm-config`. On some distros, the names might not be the same. In those cases use `CXX` and `LLVM_CONF` to pass the values to the makefile like so:
 ```bash
 make CXX=clang-9 LLVM_CONF=llvm-config-9
