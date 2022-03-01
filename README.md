@@ -69,10 +69,11 @@ make
 After the build is finished you can choose to run `make install`. It will simply symlink cgrep into `/usr/local/bin`.
 
 If you have installed LLVM but don't have `llvm-config`, you are missing the dev package for LLVM.<br/>
-`cgrep` supports LLVM 7,8,9,10,11,12,13 and 14.<br/>
+`cgrep` supports LLVM 7,8,9,10,11,12,13,14 and 15.<br/>
+We support whatever version we can get from https://apt.llvm.org/llvm.sh. The versions above are the ones currently provided by the script. When they remove a version we drop support. When they add a new one we start supporting that.<br/>
 The makefile assumes clang is called `clang` and llvm-config is called `llvm-config`. On some distros, the names might not be the same. In those cases use `CXX` and `LLVM_CONF` to pass the values to the makefile like so:
 ```bash
-make CXX=clang-9 LLVM_CONF=llvm-config-9
+make CXX=clang-15 LLVM_CONF=llvm-config-15
 ```
 
 For windows builds, cygwin builds are supported. Get llvm and clang along with their sources and build like usual. If you run into problems while building on cygwin, you can take a look at the `appveyor.yml` file under the repository root.
@@ -85,7 +86,7 @@ cd cgrep
 git submodule init
 git submodule update
 mkdir build
-cmake ../ -DLLVM_CONF=llvm-config-10 -DCMAKE_CXX_COMPILER=clang++-10 -DUSE_MONOLITH_LIBTOOLING=ON
+cmake ../ -DLLVM_CONF=llvm-config-15 -DCMAKE_CXX_COMPILER=clang++-15 -DUSE_MONOLITH_LIBTOOLING=ON
 make
 ```
 The 3 variables denote the llvm-config executable name, the clang++ name and finally, the last one tells cmake whether to build using the single c++ libtooling library or just use the old way with all the libtooling libraries.<br/>
