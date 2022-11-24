@@ -150,7 +150,7 @@ matrix:
       - git submodule init
       - git submodule update
       script:
-        - mkdir build && cd build && cmake ../ -DLLVM_CONF=llvm-config-15 -DCMAKE_CXX_COMPILER=clang++-15 -DUSE_MONOLITH_LIBTOOLING=OFF && make
+        - mkdir build && cd build && cmake ../ -DLLVM_CONF=llvm-config-15 -DCMAKE_CXX_COMPILER=clang++-15 -DUSE_MONOLITH_LIBTOOLING=OFF -DLLVM_PACKAGE_VERSION=15.0.0 && make
     - dist: focal
       name: llvm16
       sudo: required
@@ -165,4 +165,4 @@ matrix:
       - git submodule init
       - git submodule update
       script:
-        - mkdir build && cd build && cmake ../ -DLLVM_CONF=llvm-config-16 -DCMAKE_CXX_COMPILER=clang++-16 -DUSE_MONOLITH_LIBTOOLING=OFF && make
+        - mkdir build && cd build && cmake ../ -DLLVM_CONF=llvm-config-16 -DCMAKE_CXX_COMPILER=clang++-16 -DUSE_MONOLITH_LIBTOOLING=OFF -DLLVM_PACKAGE_VERSION=16.0.0 && make
