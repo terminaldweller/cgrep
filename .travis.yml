@@ -136,7 +136,7 @@ matrix:
       - git submodule update
       script:
         - make CXX=clang-14 LLVM_CONF=llvm-config-14
-    - dist: bionic
+    - dist: focal
       name: llvm15
       sudo: required
       language: cpp
@@ -150,8 +150,8 @@ matrix:
       - git submodule init
       - git submodule update
       script:
-        - make CXX=clang-15 LLVM_CONF=llvm-config-15
-    - dist: bionic
+        - mkdir build && cd build && cmake ../ -DLLVM_CONF=llvm-config-15 -DCMAKE_CXX_COMPILER=clang++-15 -DUSE_MONOLITH_LIBTOOLING=OFF && make
+    - dist: focal
       name: llvm16
       sudo: required
       language: cpp
@@ -165,4 +165,4 @@ matrix:
       - git submodule init
       - git submodule update
       script:
-        - mkdir build && cd build && cmake ../ -DLLVM_CONF=llvm-config-16 -DCMAKE_CXX_COMPILER=clang++-16 -DUSE_MONOLITH_LIBTOOLING=oFF && make
+        - mkdir build && cd build && cmake ../ -DLLVM_CONF=llvm-config-16 -DCMAKE_CXX_COMPILER=clang++-16 -DUSE_MONOLITH_LIBTOOLING=OFF && make
