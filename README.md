@@ -56,6 +56,7 @@ You will need `libclang-devel, libllvm-devel, clang, libiconv-devel`.
 
 ### Good Ole' Makefiles
 **NOTE:the monolithic libtooling library is not supported with the good ole makefiles. Look down below at Cmake for that.**<br/>
+**NOTE:Starting with llvm/clang 15.0.0 the gnu makefile should not be able to build cgrep anymore. It will be kept for older versions but moving on only the cmake build will receive updates.**</br>
 Assuming you have the llvm/clang libraries (the build file will read your llvm options using `llvm-config` so make sure it's in path), just run:
 
 ```bash
@@ -69,7 +70,7 @@ make
 After the build is finished you can choose to run `make install`. It will simply symlink cgrep into `/usr/local/bin`.
 
 If you have installed LLVM but don't have `llvm-config`, you are missing the dev package for LLVM.<br/>
-`cgrep` supports LLVM 7,8,9,10,11,12,13,14 and 15.<br/>
+`cgrep` supports LLVM 7,8,9,10,11,12,13,14,15 and 16.<br/>
 We support whatever version we can get from https://apt.llvm.org/llvm.sh. The versions above are the ones currently provided by the script. When they remove a version we drop support. When they add a new one we start supporting that.<br/>
 The makefile assumes clang is called `clang` and llvm-config is called `llvm-config`. On some distros, the names might not be the same. In those cases use `CXX` and `LLVM_CONF` to pass the values to the makefile like so:
 ```bash
@@ -86,10 +87,10 @@ cd cgrep
 git submodule init
 git submodule update
 mkdir build
-cmake ../ -DLLVM_CONF=llvm-config-15 -DCMAKE_CXX_COMPILER=clang++-15 -DUSE_MONOLITH_LIBTOOLING=ON
+cmake ../ -DLLVM_CONF=llvm-config-15 -DCMAKE_CXX_COMPILER=clang++-15 -DUSE_MONOLITH_LIBTOOLING=ON -DLLVM_PACKAGE_VERSION=15.0.0
 make
 ```
-The 3 variables denote the llvm-config executable name, the clang++ name and finally, the last one tells cmake whether to build using the single c++ libtooling library or just use the old way with all the libtooling libraries.<br/>
+The 4 variables denote the llvm-config executable name, the clang++ name and finally, the 3rd one tells cmake whether to build using the single c++ libtooling library or just use the old way with all the libtooling libraries. The last one lets cmake know which version of llvm/clang is being used.<br/>
 
 ## Usage
 
