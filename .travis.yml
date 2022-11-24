@@ -151,3 +151,18 @@ matrix:
       - git submodule update
       script:
         - make CXX=clang-15 LLVM_CONF=llvm-config-15
+    - dist: bionic
+      name: llvm16
+      sudo: required
+      language: cpp
+      before_script:
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update -y
+      - wget https://apt.llvm.org/llvm.sh
+      - chmod +x llvm.sh
+      - sudo ./llvm.sh 16
+      - sudo apt-get install -y clang-16 llvm-16-dev libclang-common-16-dev libclang-16-dev
+      - git submodule init
+      - git submodule update
+      script:
+        - mkdir build && cd build && cmake ../ -DLLVM_CONF=llvm-config-16 -DCMAKE_CXX_COMPILER=clang++-16 -DUSE_MONOLITH_LIBTOOLING=oFF && make

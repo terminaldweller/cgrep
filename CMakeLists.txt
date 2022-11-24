@@ -56,6 +56,10 @@ endif()
 target_link_libraries(cgrep ${LLVM_SYS_LIBS})
 target_link_libraries(cgrep ${LLVM_LIBS})
 
+if(LLVM_PACKAGE_VERSION VERSION_EQUAL "16.0.0" OR LLVM_PACKAGE_VERSION VERSION_GREATER "16.0.0")
+  target_link_libraries(cgrep clangSupport)
+endif()
+
 include_directories("${PROJECT_SOURCE_DIR}/cfe-extra")
 target_include_directories(cgrep PUBLIC "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR/cfe-extra}")
 
