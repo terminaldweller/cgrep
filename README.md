@@ -1,4 +1,4 @@
-[![Build Status](https://app.travis-ci.com/terminaldweller/cgrep.svg?branch=master)](https://app.travis-ci.com/terminaldweller/cgrep)
+![example workflow](https://github.com/terminaldweller/cgrep/actions/workflows/cmake.yml/badge.svg)
 [![Build status](https://ci.appveyor.com/api/projects/status/caab8oxmgljb87te?svg=true)](https://ci.appveyor.com/project/bloodstalker/cgrep)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/a70e8f48e3214a4f97850b4a1d7c5686)](https://www.codacy.com/gh/terminaldweller/cgrep/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=terminaldweller/cgrep&amp;utm_campaign=Badge_Grade)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep?ref=badge_shield)
