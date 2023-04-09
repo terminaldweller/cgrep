@@ -166,3 +166,18 @@ matrix:
       - git submodule update
       script:
         - mkdir build && cd build && cmake ../ -DLLVM_CONF=llvm-config-16 -DCMAKE_CXX_COMPILER=clang++-16 -DUSE_MONOLITH_LIBTOOLING=OFF -DLLVM_PACKAGE_VERSION=16.0.0 && make
+    - dist: focal
+      name: llvm17
+      sudo: required
+      language: cpp
+      before_script:
+      - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+      - sudo apt-get update -y
+      - wget https://apt.llvm.org/llvm.sh
+      - chmod +x llvm.sh
+      - sudo ./llvm.sh 17
+      - sudo apt-get install -y clang-17 llvm-17-dev libclang-common-17-dev libclang-17-dev
+      - git submodule init
+      - git submodule update
+      script:
+        - mkdir build && cd build && cmake ../ -DLLVM_CONF=llvm-config-17 -DCMAKE_CXX_COMPILER=clang++-17 -DUSE_MONOLITH_LIBTOOLING=OFF -DLLVM_PACKAGE_VERSION=17.0.0 && make
