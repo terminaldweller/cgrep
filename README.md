@@ -1,7 +1,7 @@
 ![example workflow](https://github.com/terminaldweller/cgrep/actions/workflows/cmake.yml/badge.svg)
-[![Build status](https://ci.appveyor.com/api/projects/status/caab8oxmgljb87te?svg=true)](https://ci.appveyor.com/project/bloodstalker/cgrep)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/a70e8f48e3214a4f97850b4a1d7c5686)](https://www.codacy.com/gh/terminaldweller/cgrep/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=terminaldweller/cgrep&amp;utm_campaign=Badge_Grade)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep?ref=badge_shield)
+[![Build status](https://ci.appveyor.com/api/projects/status/caab8oxmgljb87te?svg=true)](https://ci.appveyor.com/project/terminaldweller/cgrep)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/a70e8f48e3214a4f97850b4a1d7c5686)](https://www.codacy.com/gh/terminaldweller/cgrep/dashboard?utm_source=github.com&utm_medium=referral&utm_content=terminaldweller/cgrep&utm_campaign=Badge_Grade)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fterminaldweller%2Fcgrep.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fterminaldweller%2Fcgrep?ref=badge_shield)
 [![Gitter](https://badges.gitter.im/mutatortools/community.svg)](https://gitter.im/mutatortools/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # cgrep
@@ -20,75 +20,41 @@ and it will match your regex against all function declarations, and will output 
 
 ## Features
 
-  * It's basically Clang regexing it's way through your C-family source-code. You have all the context you can ever need.
-  * Can output whether to print the declaration of a match even if the match itself is not a declaration along with the matched result.
-  * Can output matches in a script-friendly format which could be used in turn by a secondary script.
+- It's basically Clang regexing it's way through your C-family source-code. You have all the context you can ever need.
+- Can output whether to print the declaration of a match even if the match itself is not a declaration along with the matched result.
+- Can output matches in a script-friendly format which could be used in turn by a secondary script.
 
 ### Will cgrep try to implement all of the grep switches?
+
 The answer is no. The main distinction is that `cgrep` is only meant to work on C-family source files not text files. Most of `grep`'s switches don't apply to the usecase or provide almost no benefits at all.<br/>
 That being said, I might have missd something so you can always make suggestions in the form of a new issue.
 
 ### Will cgrep support a new switch that matches X?
+
 If it makes sense sure, but I want to be careful with what cgrep implements. If everything gets implemented, that is, cgrep implements every possible switch(well, a subset of "all"), we end up with an inferior version of `clang-query` that would be too slow to be of any use to anyone. So please keep in mind that I will have to draw the line somewhere.
 
 ## Building
 
-You can get the source files from the [release](https://github.com/bloodstalker/cgrep/releases) page or a release branch usually named `rcx`.<br/>
-The Release Candidate branches are the release branches. Master is the dev branch.<br/>
-
-### Fedora
-`sudo dnf install clang-devel llvm-devel llvm-static`
-
-### Ubuntu
-`sudo apt install clang-X llvm-X-dev libclang-common-X-dev libclang-X-dev`<br/>
-Replace X with the LLVM version of your choice.
-
-### Debian
-`sudo apt install clang-X llvm-X-dev libclang-common-X-dev libclang-X-dev`<br/>
-Replace X with the LLVM version of your choice.
-
-### Arch
-You can get cgrep from AUR. Thanks to [schra](https://github.com/schra).
-
-### Cygwin
-You will need `libclang-devel, libllvm-devel, clang, libiconv-devel`.
+There are a couple of examples under `docker`. You can use those if you get stuck.<br/>
 
 ### Good Ole' Makefiles
-**NOTE:the monolithic libtooling library is not supported with the good ole makefiles. Look down below at Cmake for that.**<br/>
-**NOTE:Starting with llvm/clang 15.0.0 the gnu makefile should not be able to build cgrep anymore. It will be kept for older versions but moving on only the cmake build will receive updates.**</br>
-Assuming you have the llvm/clang libraries (the build file will read your llvm options using `llvm-config` so make sure it's in path), just run:
 
-```bash
-git clone https://github.com/bloodstalker/cgrep
-cd cgrep
-git submodule init
-git submodule update
-make
-```
-
-After the build is finished you can choose to run `make install`. It will simply symlink cgrep into `/usr/local/bin`.
-
-If you have installed LLVM but don't have `llvm-config`, you are missing the dev package for LLVM.<br/>
-`cgrep` supports LLVM 7,8,9,10,11,12,13,14,15 and 16.<br/>
-We support whatever version we can get from https://apt.llvm.org/llvm.sh. The versions above are the ones currently provided by the script. When they remove a version we drop support. When they add a new one we start supporting that.<br/>
-The makefile assumes clang is called `clang` and llvm-config is called `llvm-config`. On some distros, the names might not be the same. In those cases use `CXX` and `LLVM_CONF` to pass the values to the makefile like so:
-```bash
-make CXX=clang-15 LLVM_CONF=llvm-config-15
-```
-
-For windows builds, cygwin builds are supported. Get llvm and clang along with their sources and build like usual. If you run into problems while building on cygwin, you can take a look at the `appveyor.yml` file under the repository root.
+**NOTE: Good ole makefiles are no longer supported.**<br/>
 
 ### Cmake
+
 To do an out-of-source build simply do:<br/>
+
 ```bash
 git clone https://github.com/terminaldweller/cgrep
 cd cgrep
 git submodule init
 git submodule update
 mkdir build
-cmake ../ -DLLVM_CONF=llvm-config-15 -DCMAKE_CXX_COMPILER=clang++-15 -DUSE_MONOLITH_LIBTOOLING=ON -DLLVM_PACKAGE_VERSION=15.0.0
+cmake ../ -DLLVM_CONF=llvm-config-15 -DCMAKE_CXX_COMPILER=clang++-15 -DUSE_MONOLITH_LIBTOOLING=ON
 make
 ```
+
 The 4 variables denote the llvm-config executable name, the clang++ name and finally, the 3rd one tells cmake whether to build using the single c++ libtooling library or just use the old way with all the libtooling libraries. The last one lets cmake know which version of llvm/clang is being used.<br/>
 
 ## Usage
@@ -102,9 +68,11 @@ cgrep -A 1 -B 1 --func --declrefexpr --regex n[aA]m --nocolor --nodecl ./myaweso
 In order for cgrep to work, you need to have a compilation database, tools like `cmake` can generate one for you.<br/>
 You can, by all means, run cgrep without a compilation database but whether that works or not really depends on your source file. Can you build your source file with clang without passing it any options?
 If the answer to that is yes, then you can just run cgrep without a compilation database like so:<br/>
+
 ```bash
 cgrep -A 1 -B 1 --func --declrefexpr --regex n[aA]m --nocolor --nodecl ./myawesomecode.cpp --
 ```
+
 the `--` at the end is an explicit way of saying that you will not be providing a compilation database. Newer versions of clang will try to still go through with the compilation even if there is no compilation database found.
 Otherwise you need a compilation database.<br/>
 
@@ -158,6 +126,7 @@ For an up-to-date list, you can run `cgrep --help` or look at the man page.
 `cgrep` is a clang tool, so it will accept all valid clang command line options.
 
 ## Known Issues
+
 `cgrep` complains that it cannot find `stddef.h` or some other similar header. If that happens to you , it's because cgrep can't find the clang built-in headers. run `llvm-config --libdir`, then head on to `clang`. Inside that directory you should see one(or maybe more) llvm/clang versions. Pick the one you used to build cgrep against. Inside that directory there will be a directory named `include`. Pass that to cgrep any way you see fit.<br/>
 Alternatively, `$(llvm-config --libdir)/clang/$(llvm-config --version)/include` should give the path cgrep needs to include. If you build your llvm/clang from upstream, this might not work. SVN builds will have the svn string attached to the version number.<br/>
 You could,for example, use `--extra-arg=-I/usr/lib/llvm-9/lib/clang/9.0.0/include` to call cgrep or you could just alias `cgrep` to `cgrep --extra-arg=-I/usr/lib/llvm-9/lib/clang/9.0.0/include`.<br/>
@@ -168,5 +137,4 @@ You could,for example, use `--extra-arg=-I/usr/lib/llvm-9/lib/clang/9.0.0/includ
 
 cgrep is licensed under GPL-3.0. Everything else is licensed under it's own respective license.
 
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbloodstalker%2Fcgrep?ref=badge_large)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fterminaldweller%2Fcgrep.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fterminaldweller%2Fcgrep?ref=badge_large)

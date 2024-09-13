@@ -1,4 +1,4 @@
-FROM archlinux:base-devel-20210725.0.29770
+FROM archlinux:base-devel-20240908.0.261281
 
 RUN pacman -Syu --noconfirm
 RUN pacman -S --noconfirm wget cmake git gnupg llvm-libs llvm openmp clang
